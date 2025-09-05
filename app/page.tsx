@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,13 @@ const STORAGE_KEYS = {
     ACTIVE_BILL_ID: "multi-bill-splitter-active-bill-id",
 };
 
+const rupiah = (number: any) => {
+    return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+    }).format(number);
+};
+
 export default function MultiBillSplitter() {
     const [openTab, setOpenTab] = useState("current");
     const [people, setPeople] = useState<Person[]>([]);
@@ -52,6 +59,8 @@ export default function MultiBillSplitter() {
         price: "",
         quantity: "1",
     });
+
+    const itemNameRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const savedPeople = localStorage.getItem(STORAGE_KEYS.PEOPLE);
@@ -220,6 +229,7 @@ export default function MultiBillSplitter() {
             );
             setNewItem({ name: "", price: "", quantity: "1" });
         }
+        if (itemNameRef.current) itemNameRef.current.focus();
     };
 
     // Remove item from current bill
@@ -469,6 +479,7 @@ export default function MultiBillSplitter() {
                                     <div>
                                         <Label htmlFor="item-name">Item Name</Label>
                                         <Input
+                                            ref={itemNameRef}
                                             id="item-name"
                                             placeholder="Item name"
                                             value={newItem.name}
@@ -508,8 +519,8 @@ export default function MultiBillSplitter() {
                                                 <div>
                                                     <h4 className="font-semibold">{item.name}</h4>
                                                     <p className="text-sm text-muted-foreground">
-                                                        IDR{item.price.toFixed(2)} × {item.quantity} = IDR
-                                                        {item.finalPrice.toFixed(2)}
+                                                        {rupiah(item.price.toFixed(2))} × {item.quantity} ={" "}
+                                                        {rupiah(item.finalPrice.toFixed(2))}
                                                     </p>
                                                 </div>
                                                 <Button
@@ -542,8 +553,8 @@ export default function MultiBillSplitter() {
                                                 </div>
                                                 {item.assignedTo.length > 0 && (
                                                     <p className="text-xs text-muted-foreground mt-1">
-                                                        IDR{(item.finalPrice / item.assignedTo.length).toFixed(2)} per
-                                                        person
+                                                        {rupiah((item.finalPrice / item.assignedTo.length).toFixed(2))}{" "}
+                                                        per person
                                                     </p>
                                                 )}
                                             </div>
@@ -588,11 +599,15 @@ export default function MultiBillSplitter() {
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <span className="text-muted-foreground">Subtotal:</span>
-                                            <span className="float-right font-medium">IDR{subtotal?.toFixed(2)}</span>
+                                            <span className="float-right font-medium">
+                                                {rupiah(subtotal?.toFixed(2))}
+                                            </span>
                                         </div>
                                         <div>
                                             <span className="text-muted-foreground">Tax & Fees:</span>
-                                            <span className="float-right font-medium">IDR{taxAndFees.toFixed(2)}</span>
+                                            <span className="float-right font-medium">
+                                                {rupiah(taxAndFees.toFixed(2))}
+                                            </span>
                                         </div>
                                         <div className="col-span-2">
                                             <Separator />
@@ -600,7 +615,7 @@ export default function MultiBillSplitter() {
                                         <div className="col-span-2">
                                             <span className="font-semibold">Total:</span>
                                             <span className="float-right font-semibold text-lg">
-                                                IDR{activeBill?.totalBill.toFixed(2)}
+                                                {rupiah(activeBill?.totalBill.toFixed(2))}
                                             </span>
                                         </div>
                                     </div>
@@ -619,7 +634,7 @@ export default function MultiBillSplitter() {
                                                     >
                                                         <span className="font-medium">{person.name}</span>
                                                         <span className="text-lg font-semibold text-primary">
-                                                            IDR{owes.toFixed(2)}
+                                                            {rupiah(owes.toFixed(2))}
                                                         </span>
                                                     </div>
                                                 );
@@ -655,13 +670,13 @@ export default function MultiBillSplitter() {
                                                         <div className="flex justify-between items-center mb-3">
                                                             <h5 className="font-medium">{bill.name}</h5>
                                                             <span className="font-semibold text-blue-600">
-                                                                IDR{bill.totalBill.toFixed(2)}
+                                                                {rupiah(bill.totalBill.toFixed(2))}
                                                             </span>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                                                             <div>Items: {bill.items.length}</div>
-                                                            <div>Subtotal: IDR{billSubtotal?.toFixed(2)}</div>
-                                                            <div>Tax & Fees: IDR{billTaxAndFees.toFixed(2)}</div>
+                                                            <div>Subtotal: {rupiah(billSubtotal?.toFixed(2))}</div>
+                                                            <div>Tax & Fees: {rupiah(billTaxAndFees.toFixed(2))}</div>
                                                         </div>
                                                     </CardContent>
                                                 </Card>
@@ -677,7 +692,7 @@ export default function MultiBillSplitter() {
                                     <div className="flex justify-between items-center mb-4">
                                         <h4 className="font-semibold text-lg">Grand Total - All Bills:</h4>
                                         <span className="text-2xl font-bold text-primary">
-                                            IDR{grandTotal.toFixed(2)}
+                                            {rupiah(grandTotal.toFixed(2))}
                                         </span>
                                     </div>
 
@@ -695,7 +710,7 @@ export default function MultiBillSplitter() {
                                                     </div>
                                                 </div>
                                                 <span className="text-2xl font-bold text-primary">
-                                                    IDR{personTotals[person.id].toFixed(2)}
+                                                    {rupiah(personTotals[person.id].toFixed(2))}
                                                 </span>
                                             </div>
                                         ))}
