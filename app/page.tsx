@@ -648,7 +648,6 @@ export default function MultiBillSplitter() {
 
                     <TabsContent value="summary" className="space-y-6">
                         {/* Grand Total Summary */}
-                        {/* {people.length > 0 && bills.some((bill) => bill.items.length > 0) && ( */}
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -678,6 +677,140 @@ export default function MultiBillSplitter() {
                                                             <div>Subtotal: {rupiah(billSubtotal?.toFixed(2))}</div>
                                                             <div>Tax & Fees: {rupiah(billTaxAndFees.toFixed(2))}</div>
                                                         </div>
+                                                    </CardContent>
+                                                </Card>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                {/* Detailed breakdown per person */}
+                                <div>
+                                    <h4 className="font-semibold mb-4">Detailed Breakdown by Person:</h4>
+                                    <div className="space-y-6">
+                                        {people.map((person) => {
+                                            let personGrandTotal = 0;
+                                            const personBillBreakdown = bills
+                                                .map((bill) => {
+                                                    const personItems: {
+                                                        item: Item;
+                                                        share: number;
+                                                        taxShare: number;
+                                                    }[] = [];
+                                                    let billItemsTotal = 0;
+
+                                                    bill.items.forEach((item) => {
+                                                        if (item.assignedTo.includes(person.id)) {
+                                                            const share = item.finalPrice / item.assignedTo.length;
+                                                            billItemsTotal += share;
+                                                            personItems.push({ item, share, taxShare: 0 });
+                                                        }
+                                                    });
+
+                                                    // Calculate tax share for this person on this bill
+                                                    const { subtotal: billSubtotal, taxAndFees: billTaxAndFees } =
+                                                        calculateBillTotals(bill);
+                                                    const taxShare =
+                                                        billItemsTotal > 0
+                                                            ? (billItemsTotal / (billSubtotal || 1)) * billTaxAndFees
+                                                            : 0;
+
+                                                    // Add tax share proportionally to each item
+                                                    personItems.forEach((personItem) => {
+                                                        personItem.taxShare =
+                                                            billItemsTotal > 0
+                                                                ? (personItem.share / billItemsTotal) * taxShare
+                                                                : 0;
+                                                    });
+
+                                                    const billTotal = billItemsTotal + taxShare;
+                                                    personGrandTotal += billTotal;
+
+                                                    return {
+                                                        bill,
+                                                        items: personItems,
+                                                        billTotal,
+                                                        taxShare,
+                                                    };
+                                                })
+                                                .filter((breakdown) => breakdown.items.length > 0);
+
+                                            return (
+                                                <Card key={person.id} className="border-l-4 border-l-green-500">
+                                                    <CardContent className="pt-4">
+                                                        <div className="flex justify-between items-center mb-4">
+                                                            <h5 className="text-lg font-semibold">{person.name}</h5>
+                                                            <span className="text-xl font-bold text-primary">
+                                                                {rupiah(personGrandTotal.toFixed(2))}
+                                                            </span>
+                                                        </div>
+
+                                                        {personBillBreakdown.length > 0 ? (
+                                                            <div className="space-y-4">
+                                                                {personBillBreakdown.map(
+                                                                    ({ bill, items, billTotal, taxShare }) => (
+                                                                        <div
+                                                                            key={bill.id}
+                                                                            className="bg-muted/50 rounded-lg p-4"
+                                                                        >
+                                                                            <div className="flex justify-between items-center mb-3">
+                                                                                <h6 className="font-medium text-blue-700">
+                                                                                    {bill.name}
+                                                                                </h6>
+                                                                                <span className="font-semibold text-blue-700">
+                                                                                    {rupiah(billTotal.toFixed(2))}
+                                                                                </span>
+                                                                            </div>
+
+                                                                            <div className="space-y-2">
+                                                                                {items.map(({ item, share }) => (
+                                                                                    <div
+                                                                                        key={item.id}
+                                                                                        className="flex justify-between items-center text-sm"
+                                                                                    >
+                                                                                        <span className="text-muted-foreground">
+                                                                                            {item.name}
+                                                                                            {item.assignedTo.length >
+                                                                                                1 && (
+                                                                                                <span className="text-xs ml-1">
+                                                                                                    (split{" "}
+                                                                                                    {
+                                                                                                        item.assignedTo
+                                                                                                            .length
+                                                                                                    }{" "}
+                                                                                                    ways)
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </span>
+                                                                                        <span>
+                                                                                            {rupiah(share.toFixed(2))}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                ))}
+                                                                                {taxShare > 0 && (
+                                                                                    <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
+                                                                                        <span className="text-muted-foreground">
+                                                                                            Tax & Fees Share
+                                                                                        </span>
+                                                                                        <span>
+                                                                                            {rupiah(
+                                                                                                taxShare.toFixed(2)
+                                                                                            )}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-muted-foreground text-sm">
+                                                                No items assigned to this person
+                                                            </p>
+                                                        )}
                                                     </CardContent>
                                                 </Card>
                                             );
@@ -718,7 +851,6 @@ export default function MultiBillSplitter() {
                                 </div>
                             </CardContent>
                         </Card>
-                        {/* )} */}
                     </TabsContent>
                 </Tabs>
             </div>
