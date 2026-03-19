@@ -41,6 +41,7 @@ interface Bill {
     items: Item[];
     totalBill: number;
     createdAt: Date;
+    paidBy?: string;
 }
 
 const STORAGE_KEYS = {
@@ -257,6 +258,7 @@ export default function MultiBillSplitter() {
                         (personId) => personId !== id
                     ),
                 })),
+                paidBy: bill.paidBy === id ? undefined : bill.paidBy,
             }))
         );
     };
@@ -352,6 +354,14 @@ export default function MultiBillSplitter() {
         );
     };
 
+    const updateBillPaidBy = (billId: string, personId: string) => {
+        setBills(
+            bills.map((bill) =>
+                bill.id === billId ? { ...bill, paidBy: personId } : bill
+            )
+        );
+    };
+
     const togglePersonAssignment = (itemId: string, personId: string) => {
         setBills(
             bills.map((bill) =>
@@ -410,16 +420,28 @@ export default function MultiBillSplitter() {
     };
 
     const calculateGrandTotals = () => {
-        const personTotals: { [key: string]: number } = {};
+        const personTotals: {
+            [key: string]: { owes: number; paid: number; balance: number };
+        } = {};
         let grandTotal = 0;
 
         people.forEach((person) => {
-            let personTotal = 0;
+            let personOwesTotal = 0;
+            let personPaidTotal = 0;
+
             bills.forEach((bill) => {
-                personTotal += calculatePersonOwesForBill(person.id, bill);
+                personOwesTotal += calculatePersonOwesForBill(person.id, bill);
+                if (bill.paidBy === person.id) {
+                    personPaidTotal += bill.totalBill;
+                }
             });
-            personTotals[person.id] = personTotal;
-            grandTotal += personTotal;
+
+            personTotals[person.id] = {
+                owes: personOwesTotal,
+                paid: personPaidTotal,
+                balance: personPaidTotal - personOwesTotal,
+            };
+            grandTotal += personOwesTotal;
         });
 
         return { personTotals, grandTotal };
@@ -785,8 +807,8 @@ export default function MultiBillSplitter() {
                                 <CardTitle>Total Bill Amount</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex gap-2 items-end">
-                                    <div className="flex-1">
+                                <div className="flex gap-4 items-end flex-wrap sm:flex-nowrap">
+                                    <div className="flex-1 w-full sm:w-auto">
                                         <Label htmlFor="total-bill">
                                             Total Amount (IDR)
                                         </Label>
@@ -804,6 +826,32 @@ export default function MultiBillSplitter() {
                                                 )
                                             }
                                         />
+                                    </div>
+                                    <div className="flex-1 w-full sm:w-auto">
+                                        <Label htmlFor="paid-by">Paid By</Label>
+                                        <select
+                                            id="paid-by"
+                                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            value={activeBill?.paidBy || ""}
+                                            onChange={(e) =>
+                                                updateBillPaidBy(
+                                                    activeBillId,
+                                                    e.target.value
+                                                )
+                                            }
+                                        >
+                                            <option value="" disabled>
+                                                Select person
+                                            </option>
+                                            {people.map((person) => (
+                                                <option
+                                                    key={person.id}
+                                                    value={person.id}
+                                                >
+                                                    {person.name}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
                             </CardContent>
@@ -849,6 +897,20 @@ export default function MultiBillSplitter() {
                                                         2
                                                     )
                                                 )}
+                                            </span>
+                                        </div>
+                                        <div className="col-span-2">
+                                            <span className="text-muted-foreground">
+                                                Paid By:
+                                            </span>
+                                            <span className="float-right font-medium text-primary">
+                                                {activeBill?.paidBy
+                                                    ? people.find(
+                                                          (p) =>
+                                                              p.id ===
+                                                              activeBill.paidBy
+                                                      )?.name || "Unknown"
+                                                    : "Not specified"}
                                             </span>
                                         </div>
                                     </div>
@@ -1193,35 +1255,92 @@ export default function MultiBillSplitter() {
                                     </div>
 
                                     <h4 className="font-semibold mb-3">
-                                        Final Amount Each Person Owes:
+                                        Final Balance Each Person:
                                     </h4>
                                     <div className="space-y-3">
-                                        {people.map((person) => (
-                                            <div
-                                                key={person.id}
-                                                className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border"
-                                            >
-                                                <div>
-                                                    <span className="font-semibold text-lg">
-                                                        {person.name}
-                                                    </span>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        Across {bills.length}{" "}
-                                                        bill
-                                                        {bills.length > 1
-                                                            ? "s"
-                                                            : ""}
+                                        {people.map((person) => {
+                                            const { owes, paid, balance } =
+                                                personTotals[person.id];
+                                            const isOwed = balance > 0;
+                                            const balanceText =
+                                                balance === 0
+                                                    ? "Fully settled"
+                                                    : isOwed
+                                                    ? `Gets back ${rupiah(
+                                                          Math.abs(
+                                                              balance
+                                                          ).toFixed(2)
+                                                      )}`
+                                                    : `Still owes ${rupiah(
+                                                          Math.abs(
+                                                              balance
+                                                          ).toFixed(2)
+                                                      )}`;
+
+                                            return (
+                                                <div
+                                                    key={person.id}
+                                                    className={`flex flex-col p-4 rounded-lg border ${
+                                                        balance === 0
+                                                            ? "bg-muted"
+                                                            : isOwed
+                                                            ? "bg-green-50 border-green-200"
+                                                            : "bg-red-50 border-red-200"
+                                                    }`}
+                                                >
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <div>
+                                                            <span className="font-semibold text-lg">
+                                                                {person.name}
+                                                            </span>
+                                                            <div className="text-sm text-muted-foreground font-medium mt-1">
+                                                                Paid:{" "}
+                                                                {rupiah(
+                                                                    paid.toFixed(
+                                                                        2
+                                                                    )
+                                                                )}{" "}
+                                                                | Owes:{" "}
+                                                                {rupiah(
+                                                                    owes.toFixed(
+                                                                        2
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <span
+                                                            className={`text-2xl font-bold ${
+                                                                balance === 0
+                                                                    ? "text-muted-foreground"
+                                                                    : isOwed
+                                                                    ? "text-green-600"
+                                                                    : "text-red-600"
+                                                            }`}
+                                                        >
+                                                            {balance > 0
+                                                                ? "+"
+                                                                : balance < 0
+                                                                ? "-"
+                                                                : ""}
+                                                            {rupiah(
+                                                                Math.abs(
+                                                                    balance
+                                                                ).toFixed(2)
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    <div
+                                                        className={`text-right text-sm font-semibold ${
+                                                            isOwed
+                                                                ? "text-green-700"
+                                                                : "text-red-700"
+                                                        }`}
+                                                    >
+                                                        {balanceText}
                                                     </div>
                                                 </div>
-                                                <span className="text-2xl font-bold text-primary">
-                                                    {rupiah(
-                                                        personTotals[
-                                                            person.id
-                                                        ].toFixed(2)
-                                                    )}
-                                                </span>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </CardContent>
