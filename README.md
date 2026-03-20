@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Split Bill App
 
-## Getting Started
+Completely static Next.js app for splitting bills. This app can handle items across multiple bills and calculate the total amount each person needs to pay or receive.
 
-First, run the development server:
+This project costs me nothing to build and host in [pay.notwatermango.cc](https://pay.notwatermango.cc).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Background
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+-   Some friend groups are lazy to split bills, sometimes they aren't paid for months.
+-   I want to make it easier for them to split bills and track who owes what.
+-   I enjoy noting down my expenses too, untracked split bills sucks.
+-   I try not to spend a dime for this 🙏, hence no OCR or database yet (for now).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+-   **Split multiple bills** – Manage several receipts and expenses in one single session.
+-   **Calculate balances** – Automatically figures out the grand totals and who owes what.
+-   **Share via link** – Generates a URL containing all your bill data to easily share with friends.
+-   **Local storage** – Automatically saves your session data to your browser so you never lose it on refresh.
+-   🩴 **(Kinda) Responsive design** - Okay-ish on mobile, but not the best for inputting bills there.
+-   ⏳ **(TBA) Dark mode**
+-   ⏳ **(TBA) Shorter share link URL**
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+-   **Framework**: [Next.js](https://nextjs.org/) (App Router, Static)
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+-   **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
+-   **Icons**: [Lucide React](https://lucide.dev/)
+-   **Data Compression**: [lz-string](https://pieroxy.net/blog/pages/lz-string/index.html) (powers the shareable URLs without a database)
