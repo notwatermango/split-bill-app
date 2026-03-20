@@ -1050,8 +1050,11 @@ export default function MultiBillSplitter() {
                                                             ) {
                                                                 const share =
                                                                     item.finalPrice /
-                                                                    item.assignedTo.length;
-                                                                billItemsTotal += share;
+                                                                    item
+                                                                        .assignedTo
+                                                                        .length;
+                                                                billItemsTotal +=
+                                                                    share;
                                                                 personItems.push(
                                                                     {
                                                                         item,
@@ -1065,28 +1068,46 @@ export default function MultiBillSplitter() {
 
                                                     const {
                                                         subtotal: billSubtotal,
-                                                        taxAndFees: billTaxAndFees,
-                                                    } = calculateBillTotals(bill);
-                                                    
+                                                        taxAndFees:
+                                                            billTaxAndFees,
+                                                    } =
+                                                        calculateBillTotals(
+                                                            bill
+                                                        );
+
                                                     const taxShare =
                                                         billItemsTotal > 0
-                                                            ? (billItemsTotal / (billSubtotal || 1)) * billTaxAndFees
+                                                            ? (billItemsTotal /
+                                                                  (billSubtotal ||
+                                                                      1)) *
+                                                              billTaxAndFees
                                                             : 0;
 
                                                     personItems.forEach(
                                                         (personItem) => {
                                                             personItem.taxShare =
-                                                                billItemsTotal > 0
-                                                                    ? (personItem.share / billItemsTotal) * taxShare
+                                                                billItemsTotal >
+                                                                0
+                                                                    ? (personItem.share /
+                                                                          billItemsTotal) *
+                                                                      taxShare
                                                                     : 0;
                                                         }
                                                     );
 
-                                                    const billTotal = billItemsTotal + taxShare;
-                                                    const amountPaid = bill.paidBy === person.id ? bill.totalBill : 0;
-                                                    const netOwesForBill = billTotal - amountPaid;
-                                                    
-                                                    personGrandTotal += netOwesForBill;
+                                                    const billTotal =
+                                                        billItemsTotal +
+                                                        taxShare;
+                                                    const amountPaid =
+                                                        bill.paidBy ===
+                                                        person.id
+                                                            ? bill.totalBill
+                                                            : 0;
+                                                    const netOwesForBill =
+                                                        billTotal - amountPaid;
+
+                                                    personGrandTotal +=
+                                                        netOwesForBill;
 
                                                     return {
                                                         bill,
@@ -1099,25 +1120,47 @@ export default function MultiBillSplitter() {
                                                 })
                                                 .filter(
                                                     (breakdown) =>
-                                                        breakdown.items.length > 0 || breakdown.amountPaid > 0
+                                                        breakdown.items.length >
+                                                            0 ||
+                                                        breakdown.amountPaid > 0
                                                 );
 
                                             return (
                                                 <Card
                                                     key={person.id}
-                                                    className="border-l-4 border-l-green-500"
+                                                    className="border-l-4 border-l-indigo-500"
                                                 >
                                                     <CardContent className="pt-4">
                                                         <div className="flex justify-between items-center mb-4">
                                                             <h5 className="text-lg font-semibold">
                                                                 {person.name}
                                                             </h5>
-                                                            <span className={`text-xl font-bold ${personGrandTotal < 0 ? 'text-green-600' : 'text-primary'}`}>
-                                                                {personGrandTotal < 0 ? '-' : ''}{rupiah(Math.abs(personGrandTotal).toFixed(2))}
+                                                            <span
+                                                                className={`text-xl font-bold ${
+                                                                    personGrandTotal <
+                                                                    0
+                                                                        ? "text-green-700"
+                                                                        : "text-red-700"
+                                                                }`}
+                                                            >
+                                                                {personGrandTotal <
+                                                                0
+                                                                    ? ""
+                                                                    : "("}
+                                                                {rupiah(
+                                                                    Math.abs(
+                                                                        personGrandTotal
+                                                                    ).toFixed(2)
+                                                                )}
+                                                                {personGrandTotal <
+                                                                0
+                                                                    ? ""
+                                                                    : ")"}
                                                             </span>
                                                         </div>
 
-                                                        {personBillBreakdown.length > 0 ? (
+                                                        {personBillBreakdown.length >
+                                                        0 ? (
                                                             <div className="space-y-4">
                                                                 {personBillBreakdown.map(
                                                                     ({
@@ -1129,15 +1172,36 @@ export default function MultiBillSplitter() {
                                                                         netOwesForBill,
                                                                     }) => (
                                                                         <div
-                                                                            key={bill.id}
+                                                                            key={
+                                                                                bill.id
+                                                                            }
                                                                             className="bg-muted/50 rounded-lg p-4"
                                                                         >
                                                                             <div className="flex justify-between items-center mb-3">
                                                                                 <h6 className="font-medium text-blue-700">
-                                                                                    {bill.name}
+                                                                                    {
+                                                                                        bill.name
+                                                                                    }
                                                                                 </h6>
-                                                                                <span className={`font-semibold ${netOwesForBill < 0 ? 'text-green-600' : 'text-blue-700'}`}>
-                                                                                    {netOwesForBill < 0 ? '-' : ''}{rupiah(Math.abs(netOwesForBill).toFixed(2))}
+                                                                                <span
+                                                                                    className={`font-semibold ${
+                                                                                        netOwesForBill <
+                                                                                        0
+                                                                                            ? "text-indigo-600"
+                                                                                            : "text-blue-700"
+                                                                                    }`}
+                                                                                >
+                                                                                    {netOwesForBill <
+                                                                                    0
+                                                                                        ? "-"
+                                                                                        : ""}
+                                                                                    {rupiah(
+                                                                                        Math.abs(
+                                                                                            netOwesForBill
+                                                                                        ).toFixed(
+                                                                                            2
+                                                                                        )
+                                                                                    )}
                                                                                 </span>
                                                                             </div>
 
@@ -1148,38 +1212,73 @@ export default function MultiBillSplitter() {
                                                                                         share,
                                                                                     }) => (
                                                                                         <div
-                                                                                            key={item.id}
+                                                                                            key={
+                                                                                                item.id
+                                                                                            }
                                                                                             className="flex justify-between items-center text-sm"
                                                                                         >
                                                                                             <span className="text-muted-foreground">
-                                                                                                {item.name}
-                                                                                                {item.assignedTo.length > 1 && (
+                                                                                                {
+                                                                                                    item.name
+                                                                                                }
+                                                                                                {item
+                                                                                                    .assignedTo
+                                                                                                    .length >
+                                                                                                    1 && (
                                                                                                     <span className="text-xs ml-1">
-                                                                                                        (split {item.assignedTo.length} ways)
+                                                                                                        (split{" "}
+                                                                                                        {
+                                                                                                            item
+                                                                                                                .assignedTo
+                                                                                                                .length
+                                                                                                        }{" "}
+                                                                                                        ways)
                                                                                                     </span>
                                                                                                 )}
                                                                                             </span>
                                                                                             <span>
-                                                                                                {rupiah(share.toFixed(2))}
+                                                                                                {rupiah(
+                                                                                                    share.toFixed(
+                                                                                                        2
+                                                                                                    )
+                                                                                                )}
                                                                                             </span>
                                                                                         </div>
                                                                                     )
                                                                                 )}
-                                                                                {taxShare > 0 && (
+                                                                                {taxShare >
+                                                                                    0 && (
                                                                                     <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
                                                                                         <span className="text-muted-foreground">
-                                                                                            Tax & Fees Share
+                                                                                            Tax
+                                                                                            &
+                                                                                            Fees
+                                                                                            Share
                                                                                         </span>
                                                                                         <span>
-                                                                                            {rupiah(taxShare.toFixed(2))}
+                                                                                            {rupiah(
+                                                                                                taxShare.toFixed(
+                                                                                                    2
+                                                                                                )
+                                                                                            )}
                                                                                         </span>
                                                                                     </div>
                                                                                 )}
-                                                                                {amountPaid > 0 && (
-                                                                                    <div className="flex justify-between items-center text-sm border-t border-green-200 pt-2 mt-2 font-semibold text-green-700">
-                                                                                        <span>Paid for bill</span>
+                                                                                {amountPaid >
+                                                                                    0 && (
+                                                                                    <div className="flex justify-between items-center text-sm border-t border-indigo-200 pt-2 mt-2 font-semibold text-green-700">
                                                                                         <span>
-                                                                                            -{rupiah(amountPaid.toFixed(2))}
+                                                                                            Paid
+                                                                                            for
+                                                                                            bill
+                                                                                        </span>
+                                                                                        <span>
+                                                                                            -
+                                                                                            {rupiah(
+                                                                                                amountPaid.toFixed(
+                                                                                                    2
+                                                                                                )
+                                                                                            )}
                                                                                         </span>
                                                                                     </div>
                                                                                 )}
@@ -1190,7 +1289,8 @@ export default function MultiBillSplitter() {
                                                             </div>
                                                         ) : (
                                                             <p className="text-muted-foreground text-sm">
-                                                                No activity for this person
+                                                                No activity for
+                                                                this person
                                                             </p>
                                                         )}
                                                     </CardContent>
