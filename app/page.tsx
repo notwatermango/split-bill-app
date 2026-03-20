@@ -103,6 +103,7 @@ export default function MultiBillSplitter() {
                         setActiveBillId(parsedData.activeBillId);
 
                     loadedFromHash = true;
+                    setOpenTab("summary");
 
                     // Clean up the URL so it doesn't look messy after loading
                     window.history.replaceState(
