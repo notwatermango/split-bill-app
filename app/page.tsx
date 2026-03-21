@@ -1015,6 +1015,18 @@ export default function MultiBillSplitter() {
                                                                     )
                                                                 )}
                                                             </div>
+                                                            <div>
+                                                                Paid By:{" "}
+                                                                <span className="font-medium text-primary">
+                                                                    {bill.paidBy
+                                                                        ? people.find(
+                                                                              (p) =>
+                                                                                  p.id ===
+                                                                                  bill.paidBy
+                                                                          )?.name || "Unknown"
+                                                                        : "Not specified"}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </CardContent>
                                                 </Card>
