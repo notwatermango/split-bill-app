@@ -392,12 +392,13 @@ export default function MultiBillSplitter() {
     };
 
     const calculateBillTotals = (bill: Bill) => {
-        if (!bill) return { subTotal: 0, taxAndFees: 0 };
+        if (!bill) return { subtotal: 0, taxAndFees: 0 };
         const subtotal = bill.items.reduce(
             (sum, item) => sum + item.finalPrice,
             0
         );
-        const taxAndFees = Math.max(0, bill.totalBill - subtotal);
+        const effectiveTotal = Math.max(bill.totalBill || 0, subtotal);
+        const taxAndFees = effectiveTotal - subtotal;
         return { subtotal, taxAndFees };
     };
 
@@ -434,7 +435,8 @@ export default function MultiBillSplitter() {
             bills.forEach((bill) => {
                 personOwesTotal += calculatePersonOwesForBill(person.id, bill);
                 if (bill.paidBy === person.id) {
-                    personPaidTotal += bill.totalBill;
+                    const { subtotal } = calculateBillTotals(bill);
+                    personPaidTotal += Math.max(bill.totalBill || 0, subtotal);
                 }
             });
 
@@ -683,7 +685,7 @@ export default function MultiBillSplitter() {
                                     </div>
                                     <div>
                                         <Label htmlFor="item-price">
-                                            Price (IDR)
+                                            Price
                                         </Label>
                                         <Input
                                             id="item-price"
@@ -807,19 +809,23 @@ export default function MultiBillSplitter() {
                         {/* Total Bill for Current Bill */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Total Bill Amount</CardTitle>
+                                <CardTitle>Total Paid</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex gap-4 items-end flex-wrap sm:flex-nowrap">
                                     <div className="flex-1 w-full sm:w-auto">
                                         <Label htmlFor="total-bill">
-                                            Total Amount (IDR)
+                                            How much paid including tax & fees?
                                         </Label>
                                         <Input
                                             id="total-bill"
                                             type="number"
                                             step="0.01"
-                                            placeholder="0.00"
+                                            placeholder={
+                                                subtotal
+                                                    ? subtotal.toFixed(2)
+                                                    : "0.00"
+                                            }
                                             value={activeBill?.totalBill || ""}
                                             onChange={(e) =>
                                                 updateTotalBill(
@@ -866,7 +872,7 @@ export default function MultiBillSplitter() {
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Calculator className="h-5 w-5" />
-                                        {activeBill?.name} Summary
+                                        Summary of {activeBill?.name}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
@@ -896,9 +902,11 @@ export default function MultiBillSplitter() {
                                             </span>
                                             <span className="float-right font-semibold text-lg">
                                                 {rupiah(
-                                                    activeBill?.totalBill.toFixed(
-                                                        2
-                                                    )
+                                                    Math.max(
+                                                        activeBill?.totalBill ||
+                                                            0,
+                                                        subtotal
+                                                    ).toFixed(2)
                                                 )}
                                             </span>
                                         </div>
@@ -906,7 +914,7 @@ export default function MultiBillSplitter() {
                                             <span className="text-muted-foreground">
                                                 Paid By:
                                             </span>
-                                            <span className="float-right font-medium text-primary">
+                                            <span className="float-right font-medium text-details">
                                                 {activeBill?.paidBy
                                                     ? people.find(
                                                           (p) =>
@@ -922,7 +930,7 @@ export default function MultiBillSplitter() {
 
                                     <div>
                                         <h4 className="font-semibold mb-3">
-                                            What Each Person Owes for This Bill:
+                                            Expense per person:
                                         </h4>
                                         <div className="space-y-2">
                                             {people.map((person) => {
@@ -939,7 +947,7 @@ export default function MultiBillSplitter() {
                                                         <span className="font-medium">
                                                             {person.name}
                                                         </span>
-                                                        <span className="text-lg font-semibold text-primary">
+                                                        <span className="text-lg font-semibold">
                                                             {rupiah(
                                                                 owes.toFixed(2)
                                                             )}
@@ -987,9 +995,11 @@ export default function MultiBillSplitter() {
                                                             </h5>
                                                             <span className="font-semibold text-details">
                                                                 {rupiah(
-                                                                    bill.totalBill.toFixed(
-                                                                        2
-                                                                    )
+                                                                    Math.max(
+                                                                        bill.totalBill ||
+                                                                            0,
+                                                                        billSubtotal
+                                                                    ).toFixed(2)
                                                                 )}
                                                             </span>
                                                         </div>
@@ -1019,7 +1029,7 @@ export default function MultiBillSplitter() {
                                                             </div>
                                                             <div>
                                                                 Paid By:{" "}
-                                                                <span className="font-medium text-primary">
+                                                                <span className="font-medium text-details">
                                                                     {bill.paidBy
                                                                         ? people.find(
                                                                               (
@@ -1207,13 +1217,9 @@ export default function MultiBillSplitter() {
                                                                                         netOwesForBill <
                                                                                         0
                                                                                             ? "text-income"
-                                                                                            : "text-details"
+                                                                                            : "text-deficit"
                                                                                     }`}
                                                                                 >
-                                                                                    {netOwesForBill <
-                                                                                    0
-                                                                                        ? "("
-                                                                                        : ""}
                                                                                     {rupiah(
                                                                                         Math.abs(
                                                                                             netOwesForBill
@@ -1221,10 +1227,6 @@ export default function MultiBillSplitter() {
                                                                                             2
                                                                                         )
                                                                                     )}
-                                                                                    {netOwesForBill <
-                                                                                    0
-                                                                                        ? ")"
-                                                                                        : ""}
                                                                                 </span>
                                                                             </div>
 
@@ -1289,21 +1291,18 @@ export default function MultiBillSplitter() {
                                                                                 )}
                                                                                 {amountPaid >
                                                                                     0 && (
-                                                                                    <div className="flex justify-between items-center text-sm border-t border-details-border pt-2 mt-2 font-semibold text-income">
+                                                                                    <div className="flex justify-between items-center text-sm border-t border-details-border pt-2 mt-2 font-semibold">
                                                                                         <span>
                                                                                             Paid
                                                                                             for
                                                                                             bill
                                                                                         </span>
                                                                                         <span>
-                                                                                            (
                                                                                             {rupiah(
                                                                                                 amountPaid.toFixed(
                                                                                                     2
                                                                                                 )
                                                                                             )}
-
-                                                                                            )
                                                                                         </span>
                                                                                     </div>
                                                                                 )}
@@ -1333,7 +1332,7 @@ export default function MultiBillSplitter() {
                                         <h4 className="font-semibold text-lg">
                                             Grand Total - All Bills:
                                         </h4>
-                                        <span className="text-2xl font-bold text-primary">
+                                        <span className="text-lg font-bold">
                                             {rupiah(grandTotal.toFixed(2))}
                                         </span>
                                     </div>
