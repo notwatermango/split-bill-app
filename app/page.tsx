@@ -21,6 +21,7 @@ import {
     Share2,
     Eye,
     EyeOff,
+    Users2,
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -975,20 +976,16 @@ export default function MultiBillSplitter() {
                     </TabsContent>
 
                     <TabsContent value="summary" className="space-y-6">
-                        {/* Grand Total Summary */}
                         <Card>
+                            {/* Per-bill breakdown */}
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                                <CardTitle className="font-semibold text-xl mb-4 flex items-center gap-2">
                                     <Calculator className="h-5 w-5" />
                                     Overall Summary - All Bills
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-6">
-                                {/* Per-bill breakdown */}
+                            <CardContent>
                                 <div>
-                                    <h4 className="font-semibold mb-4">
-                                        Bill-by-Bill Breakdown:
-                                    </h4>
                                     <div className="space-y-4">
                                         {bills.map((bill) => {
                                             const {
@@ -1061,15 +1058,25 @@ export default function MultiBillSplitter() {
                                             );
                                         })}
                                     </div>
+                                    <div className="flex justify-between items-center mt-6 pt-6 border-t font-semibold text-lg">
+                                        <h4>Grand Total - All Bills:</h4>
+                                        <span className="font-bold">
+                                            {rupiah(grandTotal.toFixed(2))}
+                                        </span>
+                                    </div>
                                 </div>
-
-                                <Separator />
-
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="font-semibold text-xl mb-4 flex items-center gap-2">
+                                    <Users2 className="h-5 w-5" />
+                                    Detailed Breakdown per Person
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
                                 {/* Detailed breakdown per person */}
                                 <div>
-                                    <h4 className="font-semibold mb-4">
-                                        Detailed Breakdown by Person:
-                                    </h4>
                                     <div className="space-y-6">
                                         {people.map((person) => {
                                             let personGrandTotal = 0;
@@ -1169,7 +1176,11 @@ export default function MultiBillSplitter() {
                                             return (
                                                 <Card
                                                     key={person.id}
-                                                    className="border-l-4 border-l-details cursor-pointer hover:bg-muted/30 transition-colors"
+                                                    className={`border-l cursor-pointer hover:bg-muted/30 transition-colors ${
+                                                        personGrandTotal < 0
+                                                            ? "border-l-income"
+                                                            : "border-l-deficit"
+                                                    }`}
                                                     onClick={() =>
                                                         togglePersonBreakdown(
                                                             person.id
@@ -1229,242 +1240,225 @@ export default function MultiBillSplitter() {
 
                                                         {visiblePersonBreakdowns[
                                                             person.id
-                                                        ] &&
-                                                            (personBillBreakdown.length >
-                                                            0 ? (
-                                                                <div className="space-y-4">
-                                                                    {personBillBreakdown.map(
-                                                                        ({
-                                                                            bill,
-                                                                            items,
-                                                                            billTotal,
-                                                                            taxShare,
-                                                                            amountPaid,
-                                                                            netOwesForBill,
-                                                                        }) => (
-                                                                            <div
-                                                                                key={
-                                                                                    bill.id
-                                                                                }
-                                                                                className="bg-muted/50 rounded-lg p-4"
-                                                                            >
-                                                                                <div className="flex justify-between items-center mb-3">
-                                                                                    <h6 className="font-medium text-details">
-                                                                                        {
-                                                                                            bill.name
-                                                                                        }
-                                                                                    </h6>
-                                                                                    <span
-                                                                                        className={`font-semibold ${
-                                                                                            netOwesForBill <
-                                                                                            0
-                                                                                                ? "text-income"
-                                                                                                : "text-deficit"
-                                                                                        }`}
-                                                                                    >
-                                                                                        {rupiah(
-                                                                                            Math.abs(
-                                                                                                netOwesForBill
-                                                                                            ).toFixed(
-                                                                                                2
+                                                        ] && (
+                                                            <>
+                                                                <div className="flex flex-col sm:flex-row justify-between mb-4 text-sm bg-muted/40 p-4 rounded-lg border mt-2">
+                                                                    <div className="text-muted-foreground font-medium mb-1 sm:mb-0">
+                                                                        Paid:{" "}
+                                                                        <span className="text-foreground">
+                                                                            {rupiah(
+                                                                                personTotals[
+                                                                                    person
+                                                                                        .id
+                                                                                ].paid.toFixed(
+                                                                                    2
+                                                                                )
+                                                                            )}
+                                                                        </span>{" "}
+                                                                        | Spent:{" "}
+                                                                        <span className="text-foreground">
+                                                                            {rupiah(
+                                                                                personTotals[
+                                                                                    person
+                                                                                        .id
+                                                                                ].owes.toFixed(
+                                                                                    2
+                                                                                )
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div
+                                                                        className={`font-semibold ${
+                                                                            personTotals[
+                                                                                person
+                                                                                    .id
+                                                                            ]
+                                                                                .balance >
+                                                                            0
+                                                                                ? "text-income"
+                                                                                : personTotals[
+                                                                                      person
+                                                                                          .id
+                                                                                  ]
+                                                                                      .balance <
+                                                                                  0
+                                                                                ? "text-deficit"
+                                                                                : "text-muted-foreground"
+                                                                        }`}
+                                                                    >
+                                                                        {personTotals[
+                                                                            person
+                                                                                .id
+                                                                        ]
+                                                                            .balance ===
+                                                                        0
+                                                                            ? "Fully settled"
+                                                                            : personTotals[
+                                                                                  person
+                                                                                      .id
+                                                                              ]
+                                                                                  .balance >
+                                                                              0
+                                                                            ? `Gets back ${rupiah(
+                                                                                  Math.abs(
+                                                                                      personTotals[
+                                                                                          person
+                                                                                              .id
+                                                                                      ]
+                                                                                          .balance
+                                                                                  ).toFixed(
+                                                                                      2
+                                                                                  )
+                                                                              )}`
+                                                                            : `Owes ${rupiah(
+                                                                                  Math.abs(
+                                                                                      personTotals[
+                                                                                          person
+                                                                                              .id
+                                                                                      ]
+                                                                                          .balance
+                                                                                  ).toFixed(
+                                                                                      2
+                                                                                  )
+                                                                              )}`}
+                                                                    </div>
+                                                                </div>
+
+                                                                {personBillBreakdown.length >
+                                                                0 ? (
+                                                                    <div className="space-y-4">
+                                                                        {personBillBreakdown.map(
+                                                                            ({
+                                                                                bill,
+                                                                                items,
+                                                                                billTotal,
+                                                                                taxShare,
+                                                                                amountPaid,
+                                                                                netOwesForBill,
+                                                                            }) => (
+                                                                                <div
+                                                                                    key={
+                                                                                        bill.id
+                                                                                    }
+                                                                                    className="bg-muted/50 rounded-lg p-4"
+                                                                                >
+                                                                                    <div className="flex justify-between items-center mb-3">
+                                                                                        <h6 className="font-medium text-details">
+                                                                                            {
+                                                                                                bill.name
+                                                                                            }
+                                                                                        </h6>
+                                                                                        <span
+                                                                                            className={`font-semibold ${
+                                                                                                netOwesForBill <
+                                                                                                0
+                                                                                                    ? "text-income"
+                                                                                                    : "text-deficit"
+                                                                                            }`}
+                                                                                        >
+                                                                                            {rupiah(
+                                                                                                Math.abs(
+                                                                                                    netOwesForBill
+                                                                                                ).toFixed(
+                                                                                                    2
+                                                                                                )
+                                                                                            )}
+                                                                                        </span>
+                                                                                    </div>
+
+                                                                                    <div className="space-y-2">
+                                                                                        {items.map(
+                                                                                            ({
+                                                                                                item,
+                                                                                                share,
+                                                                                            }) => (
+                                                                                                <div
+                                                                                                    key={
+                                                                                                        item.id
+                                                                                                    }
+                                                                                                    className="flex justify-between items-center text-sm"
+                                                                                                >
+                                                                                                    <span className="text-muted-foreground">
+                                                                                                        {
+                                                                                                            item.name
+                                                                                                        }
+                                                                                                        {item
+                                                                                                            .assignedTo
+                                                                                                            .length >
+                                                                                                            1 && (
+                                                                                                            <span className="text-xs ml-1">
+                                                                                                                (split{" "}
+                                                                                                                {
+                                                                                                                    item
+                                                                                                                        .assignedTo
+                                                                                                                        .length
+                                                                                                                }{" "}
+                                                                                                                ways)
+                                                                                                            </span>
+                                                                                                        )}
+                                                                                                    </span>
+                                                                                                    <span>
+                                                                                                        {rupiah(
+                                                                                                            share.toFixed(
+                                                                                                                2
+                                                                                                            )
+                                                                                                        )}
+                                                                                                    </span>
+                                                                                                </div>
                                                                                             )
                                                                                         )}
-                                                                                    </span>
-                                                                                </div>
-
-                                                                                <div className="space-y-2">
-                                                                                    {items.map(
-                                                                                        ({
-                                                                                            item,
-                                                                                            share,
-                                                                                        }) => (
-                                                                                            <div
-                                                                                                key={
-                                                                                                    item.id
-                                                                                                }
-                                                                                                className="flex justify-between items-center text-sm"
-                                                                                            >
+                                                                                        {taxShare >
+                                                                                            0 && (
+                                                                                            <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
                                                                                                 <span className="text-muted-foreground">
-                                                                                                    {
-                                                                                                        item.name
-                                                                                                    }
-                                                                                                    {item
-                                                                                                        .assignedTo
-                                                                                                        .length >
-                                                                                                        1 && (
-                                                                                                        <span className="text-xs ml-1">
-                                                                                                            (split{" "}
-                                                                                                            {
-                                                                                                                item
-                                                                                                                    .assignedTo
-                                                                                                                    .length
-                                                                                                            }{" "}
-                                                                                                            ways)
-                                                                                                        </span>
-                                                                                                    )}
+                                                                                                    Tax
+                                                                                                    &
+                                                                                                    Fees
+                                                                                                    Share
                                                                                                 </span>
                                                                                                 <span>
                                                                                                     {rupiah(
-                                                                                                        share.toFixed(
+                                                                                                        taxShare.toFixed(
                                                                                                             2
                                                                                                         )
                                                                                                     )}
                                                                                                 </span>
                                                                                             </div>
-                                                                                        )
-                                                                                    )}
-                                                                                    {taxShare >
-                                                                                        0 && (
-                                                                                        <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
-                                                                                            <span className="text-muted-foreground">
-                                                                                                Tax
-                                                                                                &
-                                                                                                Fees
-                                                                                                Share
-                                                                                            </span>
-                                                                                            <span>
-                                                                                                {rupiah(
-                                                                                                    taxShare.toFixed(
-                                                                                                        2
-                                                                                                    )
-                                                                                                )}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    )}
-                                                                                    {amountPaid >
-                                                                                        0 && (
-                                                                                        <div className="flex justify-between items-center text-sm border-t border-details-border pt-2 mt-2 font-semibold">
-                                                                                            <span>
-                                                                                                Paid
-                                                                                                for
-                                                                                                bill
-                                                                                            </span>
-                                                                                            <span>
-                                                                                                {rupiah(
-                                                                                                    amountPaid.toFixed(
-                                                                                                        2
-                                                                                                    )
-                                                                                                )}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    )}
+                                                                                        )}
+                                                                                        {amountPaid >
+                                                                                            0 && (
+                                                                                            <div className="flex justify-between items-center text-sm border-t border-details-border pt-2 mt-2 font-semibold">
+                                                                                                <span>
+                                                                                                    Paid
+                                                                                                    for
+                                                                                                    bill
+                                                                                                </span>
+                                                                                                <span>
+                                                                                                    {rupiah(
+                                                                                                        amountPaid.toFixed(
+                                                                                                            2
+                                                                                                        )
+                                                                                                    )}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
                                                                                 </div>
-                                                                            </div>
-                                                                        )
-                                                                    )}
-                                                                </div>
-                                                            ) : (
-                                                                <p className="text-muted-foreground text-sm">
-                                                                    No activity
-                                                                    for this
-                                                                    person
-                                                                </p>
-                                                            ))}
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <p className="text-muted-foreground text-sm">
+                                                                        No
+                                                                        activity
+                                                                        for this
+                                                                        person
+                                                                    </p>
+                                                                )}
+                                                            </>
+                                                        )}
                                                     </CardContent>
                                                 </Card>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                <Separator />
-
-                                {/* Grand totals */}
-                                <div>
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h4 className="font-semibold text-lg">
-                                            Grand Total - All Bills:
-                                        </h4>
-                                        <span className="text-lg font-bold">
-                                            {rupiah(grandTotal.toFixed(2))}
-                                        </span>
-                                    </div>
-
-                                    <h4 className="font-semibold mb-3">
-                                        Final Balance Each Person:
-                                    </h4>
-                                    <div className="space-y-3">
-                                        {people.map((person) => {
-                                            const { owes, paid, balance } =
-                                                personTotals[person.id];
-                                            const isOwed = balance > 0;
-                                            const balanceText =
-                                                balance === 0
-                                                    ? "Fully settled"
-                                                    : isOwed
-                                                    ? `Gets back ${rupiah(
-                                                          Math.abs(
-                                                              balance
-                                                          ).toFixed(2)
-                                                      )}`
-                                                    : `Still owes ${rupiah(
-                                                          Math.abs(
-                                                              balance
-                                                          ).toFixed(2)
-                                                      )}`;
-
-                                            return (
-                                                <div
-                                                    key={person.id}
-                                                    className={`flex flex-col p-4 rounded-lg border ${
-                                                        balance === 0
-                                                            ? "bg-muted"
-                                                            : isOwed
-                                                            ? "bg-income-muted border-income-border"
-                                                            : "bg-deficit-muted border-deficit-border"
-                                                    }`}
-                                                >
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <div>
-                                                            <span className="font-semibold text-lg">
-                                                                {person.name}
-                                                            </span>
-                                                            <div className="text-sm text-muted-foreground font-medium mt-1">
-                                                                Paid:{" "}
-                                                                {rupiah(
-                                                                    paid.toFixed(
-                                                                        2
-                                                                    )
-                                                                )}{" "}
-                                                                | Spent:{" "}
-                                                                {rupiah(
-                                                                    owes.toFixed(
-                                                                        2
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <span
-                                                            className={`text-2xl font-bold ${
-                                                                balance === 0
-                                                                    ? "text-muted-foreground"
-                                                                    : isOwed
-                                                                    ? "text-income"
-                                                                    : "text-deficit"
-                                                            }`}
-                                                        >
-                                                            {balance > 0
-                                                                ? "+"
-                                                                : balance < 0
-                                                                ? "-"
-                                                                : ""}
-                                                            {rupiah(
-                                                                Math.abs(
-                                                                    balance
-                                                                ).toFixed(2)
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                    <div
-                                                        className={`text-right text-sm font-semibold ${
-                                                            isOwed
-                                                                ? "text-income"
-                                                                : "text-deficit"
-                                                        }`}
-                                                    >
-                                                        {balanceText}
-                                                    </div>
-                                                </div>
                                             );
                                         })}
                                     </div>
