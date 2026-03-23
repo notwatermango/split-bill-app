@@ -28,7 +28,7 @@ export function BillSummaryButton() {
         >
             <Link href="/summary" passHref>
                 <Receipt className="h-4 w-4" />
-                Bill Summary
+                Bills Summary
             </Link>
         </Button>
     );
@@ -49,7 +49,7 @@ export function ShareButton({
             className="cursor-pointer border-primary/30 hover:text-primary-foreground hover:border-primary bg-primary/5 hover:bg-primary text-primary transition-all"
         >
             <Share2 className="h-4 w-4" />
-            {isCopied ? "Copied!" : "Share Bill"}
+            {isCopied ? "Copied!" : "Share Bills"}
         </Button>
     );
 }

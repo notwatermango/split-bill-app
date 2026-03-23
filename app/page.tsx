@@ -57,7 +57,7 @@ export default function MultiBillSplitter() {
                             (bill: any) => ({
                                 ...bill,
                                 createdAt: new Date(bill.createdAt),
-                            })
+                            }),
                         );
                         setBills(parsedBills);
                     }
@@ -71,7 +71,7 @@ export default function MultiBillSplitter() {
                     window.history.replaceState(
                         null,
                         "",
-                        window.location.pathname
+                        window.location.pathname,
                     );
                 }
             } catch (error) {
@@ -84,7 +84,7 @@ export default function MultiBillSplitter() {
             const savedPeople = localStorage.getItem(STORAGE_KEYS.PEOPLE);
             const savedBills = localStorage.getItem(STORAGE_KEYS.BILLS);
             const savedActiveBillId = localStorage.getItem(
-                STORAGE_KEYS.ACTIVE_BILL_ID
+                STORAGE_KEYS.ACTIVE_BILL_ID,
             );
 
             if (savedPeople) {
@@ -101,7 +101,7 @@ export default function MultiBillSplitter() {
                 if (
                     savedActiveBillId &&
                     parsedBills.find(
-                        (bill: Bill) => bill.id === savedActiveBillId
+                        (bill: Bill) => bill.id === savedActiveBillId,
                     )
                 ) {
                     setActiveBillId(savedActiveBillId);
@@ -162,7 +162,7 @@ export default function MultiBillSplitter() {
     const resetAllData = () => {
         if (
             confirm(
-                "Are you sure you want to reset all data? This action cannot be undone."
+                "Are you sure you want to reset all data? This action cannot be undone.",
             )
         ) {
             localStorage.removeItem(STORAGE_KEYS.PEOPLE);
@@ -203,11 +203,11 @@ export default function MultiBillSplitter() {
                 items: bill.items.map((item) => ({
                     ...item,
                     assignedTo: item.assignedTo.filter(
-                        (personId) => personId !== id
+                        (personId) => personId !== id,
                     ),
                 })),
                 paidBy: bill.paidBy === id ? undefined : bill.paidBy,
-            }))
+            })),
         );
     };
 
@@ -247,8 +247,8 @@ export default function MultiBillSplitter() {
                 bills.map((bill) =>
                     bill.id === editingBillId
                         ? { ...bill, name: editBillName.trim() }
-                        : bill
-                )
+                        : bill,
+                ),
             );
         }
         setEditingBillId("");
@@ -271,8 +271,8 @@ export default function MultiBillSplitter() {
                 bills.map((bill) =>
                     bill.id === activeBillId
                         ? { ...bill, items: [...bill.items, item] }
-                        : bill
-                )
+                        : bill,
+                ),
             );
             setNewItem({ name: "", price: "", quantity: "1" });
         }
@@ -286,27 +286,29 @@ export default function MultiBillSplitter() {
                     ? {
                           ...bill,
                           items: bill.items.filter(
-                              (item) => item.id !== itemId
+                              (item) => item.id !== itemId,
                           ),
                       }
-                    : bill
-            )
+                    : bill,
+            ),
         );
     };
 
     const updateTotalBill = (amount: number) => {
         setBills(
             bills.map((bill) =>
-                bill.id === activeBillId ? { ...bill, totalBill: amount } : bill
-            )
+                bill.id === activeBillId
+                    ? { ...bill, totalBill: amount }
+                    : bill,
+            ),
         );
     };
 
     const updateBillPaidBy = (billId: string, personId: string) => {
         setBills(
             bills.map((bill) =>
-                bill.id === billId ? { ...bill, paidBy: personId } : bill
-            )
+                bill.id === billId ? { ...bill, paidBy: personId } : bill,
+            ),
         );
     };
 
@@ -324,7 +326,7 @@ export default function MultiBillSplitter() {
                                       ...item,
                                       assignedTo: isAssigned
                                           ? item.assignedTo.filter(
-                                                (id) => id !== personId
+                                                (id) => id !== personId,
                                             )
                                           : [...item.assignedTo, personId],
                                   };
@@ -332,8 +334,8 @@ export default function MultiBillSplitter() {
                               return item;
                           }),
                       }
-                    : bill
-            )
+                    : bill,
+            ),
         );
     };
 
@@ -341,7 +343,7 @@ export default function MultiBillSplitter() {
         if (!bill) return { subtotal: 0, taxAndFees: 0, effectiveTotal: 0 };
         const subtotal = bill.items.reduce(
             (sum, item) => sum + item.finalPrice,
-            0
+            0,
         );
         const effectiveTotal = Math.max(bill.totalBill || 0, subtotal);
         const taxAndFees = effectiveTotal - subtotal;
@@ -401,7 +403,10 @@ export default function MultiBillSplitter() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Users className="h-5 w-5" />
-                            People ({people.length})
+                            People{" "}
+                            <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                {people.length}
+                            </span>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -454,7 +459,10 @@ export default function MultiBillSplitter() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <FileText className="h-5 w-5" />
-                            Bills ({bills.length})
+                            Bills{" "}
+                            <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                {bills.length}
+                            </span>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -499,7 +507,7 @@ export default function MultiBillSplitter() {
                                                 value={editBillName}
                                                 onChange={(e) =>
                                                     setEditBillName(
-                                                        e.target.value
+                                                        e.target.value,
                                                     )
                                                 }
                                                 onKeyPress={(e) =>
@@ -517,7 +525,7 @@ export default function MultiBillSplitter() {
                                                         e.stopPropagation();
                                                         startEditingBill(
                                                             bill.id,
-                                                            bill.name
+                                                            bill.name,
                                                         );
                                                     }}
                                                     className="ml-1 hover:text-details"
@@ -550,8 +558,10 @@ export default function MultiBillSplitter() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>
-                                    {activeBill?.name} Items (
-                                    {activeBill?.items.length})
+                                    {activeBill?.name} Items{" "}
+                                    <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                        {activeBill?.items.length}
+                                    </span>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -627,14 +637,14 @@ export default function MultiBillSplitter() {
                                                     <p className="text-sm text-muted-foreground">
                                                         {rupiah(
                                                             item.price.toFixed(
-                                                                2
-                                                            )
+                                                                2,
+                                                            ),
                                                         )}{" "}
                                                         × {item.quantity} ={" "}
                                                         {rupiah(
                                                             item.finalPrice.toFixed(
-                                                                2
-                                                            )
+                                                                2,
+                                                            ),
                                                         )}
                                                     </p>
                                                 </div>
@@ -660,7 +670,7 @@ export default function MultiBillSplitter() {
                                                             key={person.id}
                                                             variant={
                                                                 item.assignedTo.includes(
-                                                                    person.id
+                                                                    person.id,
                                                                 )
                                                                     ? "default"
                                                                     : "outline"
@@ -669,7 +679,7 @@ export default function MultiBillSplitter() {
                                                             onClick={() =>
                                                                 togglePersonAssignment(
                                                                     item.id,
-                                                                    person.id
+                                                                    person.id,
                                                                 )
                                                             }
                                                         >
@@ -684,7 +694,7 @@ export default function MultiBillSplitter() {
                                                                 item.finalPrice /
                                                                 item.assignedTo
                                                                     .length
-                                                            ).toFixed(2)
+                                                            ).toFixed(2),
                                                         )}{" "}
                                                         per person
                                                     </p>
@@ -720,8 +730,8 @@ export default function MultiBillSplitter() {
                                             onChange={(e) =>
                                                 updateTotalBill(
                                                     Number.parseFloat(
-                                                        e.target.value
-                                                    ) || 0
+                                                        e.target.value,
+                                                    ) || 0,
                                                 )
                                             }
                                         />
@@ -735,7 +745,7 @@ export default function MultiBillSplitter() {
                                             onChange={(e) =>
                                                 updateBillPaidBy(
                                                     activeBillId,
-                                                    e.target.value
+                                                    e.target.value,
                                                 )
                                             }
                                         >
@@ -768,7 +778,7 @@ export default function MultiBillSplitter() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="flex flex-col sm:grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <span className="text-muted-foreground">
                                         Subtotal:
@@ -788,7 +798,7 @@ export default function MultiBillSplitter() {
                                 <div className="col-span-2">
                                     <Separator />
                                 </div>
-                                <div className="col-span-2">
+                                <div className="col-span-2 flex items-center justify-between">
                                     <span className="font-semibold">
                                         Total:
                                     </span>
@@ -796,8 +806,8 @@ export default function MultiBillSplitter() {
                                         {rupiah(
                                             Math.max(
                                                 activeBill?.totalBill || 0,
-                                                subtotal
-                                            ).toFixed(2)
+                                                subtotal,
+                                            ).toFixed(2),
                                         )}
                                     </span>
                                 </div>
@@ -809,7 +819,8 @@ export default function MultiBillSplitter() {
                                         {activeBill?.paidBy
                                             ? people.find(
                                                   (p) =>
-                                                      p.id === activeBill.paidBy
+                                                      p.id ===
+                                                      activeBill.paidBy,
                                               )?.name || "Unknown"
                                             : "Not specified"}
                                     </span>
@@ -826,7 +837,7 @@ export default function MultiBillSplitter() {
                                     {people.map((person) => {
                                         const owes = calculatePersonOwesForBill(
                                             person.id,
-                                            activeBill
+                                            activeBill,
                                         );
                                         return (
                                             <div

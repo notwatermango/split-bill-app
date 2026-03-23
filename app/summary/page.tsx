@@ -4,13 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import LZString from "lz-string";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, Share2, Users2 } from "lucide-react";
+import { Calculator, CreditCard, Share2, Users2 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { PersonalBreakdownCard } from "@/components/cards/personal-breakdown";
 import { Person, Bill } from "@/lib/types";
-import { rupiah } from "@/lib/utils";
+import { calculateSuggestedPayments, rupiah } from "@/lib/utils";
 import Link from "next/link";
 import { DEFAULT_BILLS, STORAGE_KEYS } from "@/lib/constants";
+import SuggestedPaymentsCard from "@/components/cards/suggested-payments";
 
 export default function MultiBillSplitter() {
     const [people, setPeople] = useState<Person[]>([]);
@@ -211,6 +212,7 @@ export default function MultiBillSplitter() {
     };
 
     const { personTotals, grandTotal } = calculateGrandTotals();
+    const suggestedPayments = calculateSuggestedPayments(people, personTotals);
 
     return (
         <div className="min-h-screen bg-background p-4">
@@ -236,10 +238,14 @@ export default function MultiBillSplitter() {
                         </div>
                     </div>
                 </div>
+                <SuggestedPaymentsCard
+                    suggestedPayments={suggestedPayments}
+                    people={people}
+                />
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-semibold text-xl mb-4 flex items-center gap-2">
+                        <CardTitle className="font-semibold text-xl flex items-center gap-2">
                             <Users2 className="h-5 w-5" />
                             Detailed Breakdown per Person
                         </CardTitle>
@@ -274,7 +280,7 @@ export default function MultiBillSplitter() {
                 <Card>
                     {/* Per-bill breakdown */}
                     <CardHeader>
-                        <CardTitle className="font-semibold text-xl mb-4 flex items-center gap-2">
+                        <CardTitle className="font-semibold text-xl flex items-center gap-2">
                             <Calculator className="h-5 w-5" />
                             All Bills
                         </CardTitle>

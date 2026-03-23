@@ -20,3 +20,9 @@ export interface Bill {
     createdAt: Date;
     paidBy?: string;
 }
+
+export type Payment = {
+    from: string;
+    to: string;
+    amount: number;
+};

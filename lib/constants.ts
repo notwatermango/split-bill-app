@@ -7,3 +7,6 @@ export const STORAGE_KEYS = {
 };
 
 export const DEFAULT_BILLS: Bill[] = [];
+
+// TODO: consider refactor on multi currency
+export const BALANCE_TOLERANCE = 500;
