@@ -19,6 +19,8 @@ import {
     Edit2,
     RotateCcw,
     Share2,
+    Eye,
+    EyeOff,
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -73,6 +75,16 @@ export default function MultiBillSplitter() {
         quantity: "1",
     });
     const [isCopied, setIsCopied] = useState(false);
+    const [visiblePersonBreakdowns, setVisiblePersonBreakdowns] = useState<
+        Record<string, boolean>
+    >({});
+
+    const togglePersonBreakdown = (personId: string) => {
+        setVisiblePersonBreakdowns((prev) => ({
+            ...prev,
+            [personId]: !prev[personId],
+        }));
+    };
 
     const itemNameRef = useRef<HTMLInputElement>(null);
 
@@ -1157,13 +1169,40 @@ export default function MultiBillSplitter() {
                                             return (
                                                 <Card
                                                     key={person.id}
-                                                    className="border-l-4 border-l-details"
+                                                    className="border-l-4 border-l-details cursor-pointer hover:bg-muted/30 transition-colors"
+                                                    onClick={() =>
+                                                        togglePersonBreakdown(
+                                                            person.id
+                                                        )
+                                                    }
                                                 >
                                                     <CardContent className="pt-4">
                                                         <div className="flex justify-between items-center mb-4">
-                                                            <h5 className="text-lg font-semibold">
-                                                                {person.name}
-                                                            </h5>
+                                                            <div className="flex items-center gap-3">
+                                                                <h5 className="text-lg font-semibold">
+                                                                    {
+                                                                        person.name
+                                                                    }
+                                                                </h5>
+                                                                <span className="flex items-center gap-1 text-xs text-muted-foreground ml-1">
+                                                                    {visiblePersonBreakdowns[
+                                                                        person
+                                                                            .id
+                                                                    ] ? (
+                                                                        <>
+                                                                            <EyeOff className="h-3 w-3" />
+                                                                            Hide
+                                                                            details
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <Eye className="h-3 w-3" />
+                                                                            Show
+                                                                            details
+                                                                        </>
+                                                                    )}
+                                                                </span>
+                                                            </div>
                                                             <span
                                                                 className={`text-xl font-bold ${
                                                                     personGrandTotal <
@@ -1188,135 +1227,139 @@ export default function MultiBillSplitter() {
                                                             </span>
                                                         </div>
 
-                                                        {personBillBreakdown.length >
-                                                        0 ? (
-                                                            <div className="space-y-4">
-                                                                {personBillBreakdown.map(
-                                                                    ({
-                                                                        bill,
-                                                                        items,
-                                                                        billTotal,
-                                                                        taxShare,
-                                                                        amountPaid,
-                                                                        netOwesForBill,
-                                                                    }) => (
-                                                                        <div
-                                                                            key={
-                                                                                bill.id
-                                                                            }
-                                                                            className="bg-muted/50 rounded-lg p-4"
-                                                                        >
-                                                                            <div className="flex justify-between items-center mb-3">
-                                                                                <h6 className="font-medium text-details">
-                                                                                    {
-                                                                                        bill.name
-                                                                                    }
-                                                                                </h6>
-                                                                                <span
-                                                                                    className={`font-semibold ${
-                                                                                        netOwesForBill <
-                                                                                        0
-                                                                                            ? "text-income"
-                                                                                            : "text-deficit"
-                                                                                    }`}
-                                                                                >
-                                                                                    {rupiah(
-                                                                                        Math.abs(
-                                                                                            netOwesForBill
-                                                                                        ).toFixed(
-                                                                                            2
+                                                        {visiblePersonBreakdowns[
+                                                            person.id
+                                                        ] &&
+                                                            (personBillBreakdown.length >
+                                                            0 ? (
+                                                                <div className="space-y-4">
+                                                                    {personBillBreakdown.map(
+                                                                        ({
+                                                                            bill,
+                                                                            items,
+                                                                            billTotal,
+                                                                            taxShare,
+                                                                            amountPaid,
+                                                                            netOwesForBill,
+                                                                        }) => (
+                                                                            <div
+                                                                                key={
+                                                                                    bill.id
+                                                                                }
+                                                                                className="bg-muted/50 rounded-lg p-4"
+                                                                            >
+                                                                                <div className="flex justify-between items-center mb-3">
+                                                                                    <h6 className="font-medium text-details">
+                                                                                        {
+                                                                                            bill.name
+                                                                                        }
+                                                                                    </h6>
+                                                                                    <span
+                                                                                        className={`font-semibold ${
+                                                                                            netOwesForBill <
+                                                                                            0
+                                                                                                ? "text-income"
+                                                                                                : "text-deficit"
+                                                                                        }`}
+                                                                                    >
+                                                                                        {rupiah(
+                                                                                            Math.abs(
+                                                                                                netOwesForBill
+                                                                                            ).toFixed(
+                                                                                                2
+                                                                                            )
+                                                                                        )}
+                                                                                    </span>
+                                                                                </div>
+
+                                                                                <div className="space-y-2">
+                                                                                    {items.map(
+                                                                                        ({
+                                                                                            item,
+                                                                                            share,
+                                                                                        }) => (
+                                                                                            <div
+                                                                                                key={
+                                                                                                    item.id
+                                                                                                }
+                                                                                                className="flex justify-between items-center text-sm"
+                                                                                            >
+                                                                                                <span className="text-muted-foreground">
+                                                                                                    {
+                                                                                                        item.name
+                                                                                                    }
+                                                                                                    {item
+                                                                                                        .assignedTo
+                                                                                                        .length >
+                                                                                                        1 && (
+                                                                                                        <span className="text-xs ml-1">
+                                                                                                            (split{" "}
+                                                                                                            {
+                                                                                                                item
+                                                                                                                    .assignedTo
+                                                                                                                    .length
+                                                                                                            }{" "}
+                                                                                                            ways)
+                                                                                                        </span>
+                                                                                                    )}
+                                                                                                </span>
+                                                                                                <span>
+                                                                                                    {rupiah(
+                                                                                                        share.toFixed(
+                                                                                                            2
+                                                                                                        )
+                                                                                                    )}
+                                                                                                </span>
+                                                                                            </div>
                                                                                         )
                                                                                     )}
-                                                                                </span>
-                                                                            </div>
-
-                                                                            <div className="space-y-2">
-                                                                                {items.map(
-                                                                                    ({
-                                                                                        item,
-                                                                                        share,
-                                                                                    }) => (
-                                                                                        <div
-                                                                                            key={
-                                                                                                item.id
-                                                                                            }
-                                                                                            className="flex justify-between items-center text-sm"
-                                                                                        >
+                                                                                    {taxShare >
+                                                                                        0 && (
+                                                                                        <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
                                                                                             <span className="text-muted-foreground">
-                                                                                                {
-                                                                                                    item.name
-                                                                                                }
-                                                                                                {item
-                                                                                                    .assignedTo
-                                                                                                    .length >
-                                                                                                    1 && (
-                                                                                                    <span className="text-xs ml-1">
-                                                                                                        (split{" "}
-                                                                                                        {
-                                                                                                            item
-                                                                                                                .assignedTo
-                                                                                                                .length
-                                                                                                        }{" "}
-                                                                                                        ways)
-                                                                                                    </span>
-                                                                                                )}
+                                                                                                Tax
+                                                                                                &
+                                                                                                Fees
+                                                                                                Share
                                                                                             </span>
                                                                                             <span>
                                                                                                 {rupiah(
-                                                                                                    share.toFixed(
+                                                                                                    taxShare.toFixed(
                                                                                                         2
                                                                                                     )
                                                                                                 )}
                                                                                             </span>
                                                                                         </div>
-                                                                                    )
-                                                                                )}
-                                                                                {taxShare >
-                                                                                    0 && (
-                                                                                    <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
-                                                                                        <span className="text-muted-foreground">
-                                                                                            Tax
-                                                                                            &
-                                                                                            Fees
-                                                                                            Share
-                                                                                        </span>
-                                                                                        <span>
-                                                                                            {rupiah(
-                                                                                                taxShare.toFixed(
-                                                                                                    2
-                                                                                                )
-                                                                                            )}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                )}
-                                                                                {amountPaid >
-                                                                                    0 && (
-                                                                                    <div className="flex justify-between items-center text-sm border-t border-details-border pt-2 mt-2 font-semibold">
-                                                                                        <span>
-                                                                                            Paid
-                                                                                            for
-                                                                                            bill
-                                                                                        </span>
-                                                                                        <span>
-                                                                                            {rupiah(
-                                                                                                amountPaid.toFixed(
-                                                                                                    2
-                                                                                                )
-                                                                                            )}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                )}
+                                                                                    )}
+                                                                                    {amountPaid >
+                                                                                        0 && (
+                                                                                        <div className="flex justify-between items-center text-sm border-t border-details-border pt-2 mt-2 font-semibold">
+                                                                                            <span>
+                                                                                                Paid
+                                                                                                for
+                                                                                                bill
+                                                                                            </span>
+                                                                                            <span>
+                                                                                                {rupiah(
+                                                                                                    amountPaid.toFixed(
+                                                                                                        2
+                                                                                                    )
+                                                                                                )}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
                                                                             </div>
-                                                                        </div>
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <p className="text-muted-foreground text-sm">
-                                                                No activity for
-                                                                this person
-                                                            </p>
-                                                        )}
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-muted-foreground text-sm">
+                                                                    No activity
+                                                                    for this
+                                                                    person
+                                                                </p>
+                                                            ))}
                                                     </CardContent>
                                                 </Card>
                                             );
@@ -1383,7 +1426,7 @@ export default function MultiBillSplitter() {
                                                                         2
                                                                     )
                                                                 )}{" "}
-                                                                | Owes:{" "}
+                                                                | Spent:{" "}
                                                                 {rupiah(
                                                                     owes.toFixed(
                                                                         2
