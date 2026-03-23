@@ -50,8 +50,11 @@ function PersonalBreakdownCard({
                 }
             });
 
-            const { subtotal: billSubtotal, taxAndFees: billTaxAndFees, effectiveTotal: billEffectiveTotal } =
-                calculateBillTotals(bill);
+            const {
+                subtotal: billSubtotal,
+                taxAndFees: billTaxAndFees,
+                effectiveTotal: billEffectiveTotal,
+            } = calculateBillTotals(bill);
 
             const taxShare =
                 billItemsTotal > 0
@@ -66,7 +69,8 @@ function PersonalBreakdownCard({
             });
 
             const billTotal = billItemsTotal + taxShare;
-            const amountPaid = bill.paidBy === person.id ? billEffectiveTotal : 0;
+            const amountPaid =
+                bill.paidBy === person.id ? billEffectiveTotal : 0;
             if (bill.name == "Defisit Kezia") {
                 console.log(bill);
             }
@@ -100,8 +104,8 @@ function PersonalBreakdownCard({
             }`}
             onClick={() => togglePersonBreakdown(person.id)}
         >
-            <CardContent className="pt-4">
-                <div className="flex justify-between items-center mb-4">
+            <CardContent className="py-4">
+                <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <h5 className="text-lg font-semibold">{person.name}</h5>
                         <span className="flex items-center gap-1 text-xs text-muted-foreground ml-1">
@@ -133,46 +137,30 @@ function PersonalBreakdownCard({
 
                 {visiblePersonBreakdowns[person.id] && (
                     <>
-                        <div className="flex flex-col sm:flex-row justify-between mb-4 text-sm bg-muted/40 p-4 rounded-lg border mt-2">
-                            <div className="text-muted-foreground font-medium mb-1 sm:mb-0">
-                                Paid:{" "}
-                                <span className="text-foreground">
-                                    {rupiah(
-                                        personTotals[person.id].paid.toFixed(2)
-                                    )}
-                                </span>{" "}
-                                | Spent:{" "}
-                                <span className="text-foreground">
-                                    {rupiah(
-                                        personTotals[person.id].owes.toFixed(2)
-                                    )}
+                        <div className="flex flex-col sm:flex-row justify-between mb-4 text-sm bg-muted/40 p-4 rounded-lg mt-2">
+                            <div className="text-muted-foreground flex flex-col font-medium mb-1 sm:mb-0">
+                                <span>
+                                    Total Paid{" "}
+                                    <span className="text-income">
+                                        {rupiah(
+                                            personTotals[
+                                                person.id
+                                            ].paid.toFixed(2)
+                                        )}
+                                    </span>{" "}
+                                </span>
+                                <span>
+                                    Total Spent{" "}
+                                    <span className="text-deficit">
+                                        {rupiah(
+                                            personTotals[
+                                                person.id
+                                            ].owes.toFixed(2)
+                                        )}
+                                    </span>
                                 </span>
                             </div>
-                            <div
-                                className={`font-semibold ${
-                                    personTotals[person.id].balance > 0
-                                        ? "text-income"
-                                        : personTotals[person.id].balance < 0
-                                        ? "text-deficit"
-                                        : "text-muted-foreground"
-                                }`}
-                            >
-                                {personTotals[person.id].balance === 0
-                                    ? "Fully settled"
-                                    : personTotals[person.id].balance > 0
-                                    ? `Gets back ${rupiah(
-                                          Math.abs(
-                                              personTotals[person.id].balance
-                                          ).toFixed(2)
-                                      )}`
-                                    : `Owes ${rupiah(
-                                          Math.abs(
-                                              personTotals[person.id].balance
-                                          ).toFixed(2)
-                                      )}`}
-                            </div>
                         </div>
-
                         {personBillBreakdown.length > 0 ? (
                             <div className="space-y-4">
                                 {personBillBreakdown.map(

@@ -8,32 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    Trash2,
-    Plus,
-    Users,
-    Receipt,
-    Calculator,
-    FileText,
-    Edit2,
-    RotateCcw,
-    Share2,
-    Users2,
-} from "lucide-react";
+import { Trash2, Plus, Users, Calculator, FileText, Edit2 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
-import { PersonalBreakdownCard } from "@/components/cards/personal-breakdown";
 import { Person, Item, Bill } from "@/lib/types";
 import { rupiah } from "@/lib/utils";
-
-const STORAGE_KEYS = {
-    PEOPLE: "multi-bill-splitter-people",
-    BILLS: "multi-bill-splitter-bills",
-    ACTIVE_BILL_ID: "multi-bill-splitter-active-bill-id",
-};
+import Link from "next/link";
+import { DEFAULT_BILLS, STORAGE_KEYS } from "@/lib/constants";
+import {
+    BillSummaryButton,
+    ResetButton,
+    ShareButton,
+} from "@/components/action-buttons";
+import { HowToUseCard } from "@/components/cards/how-to-use";
 
 export default function MultiBillSplitter() {
-    const [openTab, setOpenTab] = useState("current");
     const [people, setPeople] = useState<Person[]>([]);
     const [bills, setBills] = useState<Bill[]>([]);
     const [activeBillId, setActiveBillId] = useState("");
@@ -47,16 +35,6 @@ export default function MultiBillSplitter() {
         quantity: "1",
     });
     const [isCopied, setIsCopied] = useState(false);
-    const [visiblePersonBreakdowns, setVisiblePersonBreakdowns] = useState<
-        Record<string, boolean>
-    >({});
-
-    const togglePersonBreakdown = (personId: string) => {
-        setVisiblePersonBreakdowns((prev) => ({
-            ...prev,
-            [personId]: !prev[personId],
-        }));
-    };
 
     const itemNameRef = useRef<HTMLInputElement>(null);
 
@@ -88,7 +66,6 @@ export default function MultiBillSplitter() {
                         setActiveBillId(parsedData.activeBillId);
 
                     loadedFromHash = true;
-                    setOpenTab("summary");
 
                     // Clean up the URL so it doesn't look messy after loading
                     window.history.replaceState(
@@ -132,15 +109,8 @@ export default function MultiBillSplitter() {
                     setActiveBillId(parsedBills[0].id);
                 }
             } else {
-                const defaultBill: Bill = {
-                    id: "1",
-                    name: "Restaurant Bill",
-                    items: [],
-                    totalBill: 0,
-                    createdAt: new Date(),
-                };
-                setBills([defaultBill]);
-                setActiveBillId("1");
+                setBills(DEFAULT_BILLS);
+                setActiveBillId("");
             }
         }
     }, []);
@@ -175,7 +145,7 @@ export default function MultiBillSplitter() {
         const jsonString = JSON.stringify(appState);
         const compressed = LZString.compressToEncodedURIComponent(jsonString);
 
-        const shareableUrl = `${window.location.origin}${window.location.pathname}#${compressed}`;
+        const shareableUrl = `${window.location.origin}${window.location.pathname}/summary#${compressed}`;
 
         navigator.clipboard
             .writeText(shareableUrl)
@@ -201,21 +171,13 @@ export default function MultiBillSplitter() {
             window.history.replaceState(null, "", window.location.pathname); // Clear hash just in case
 
             setPeople([]);
-            const defaultBill: Bill = {
-                id: Date.now().toString(),
-                name: "Restaurant Bill",
-                items: [],
-                totalBill: 0,
-                createdAt: new Date(),
-            };
-            setBills([defaultBill]);
-            setActiveBillId(defaultBill.id);
+            setBills(DEFAULT_BILLS);
+            setActiveBillId("");
             setNewPersonName("");
             setNewBillName("");
             setEditingBillId("");
             setEditBillName("");
             setNewItem({ name: "", price: "", quantity: "1" });
-            setOpenTab("current");
         }
     };
 
@@ -406,73 +368,32 @@ export default function MultiBillSplitter() {
         return itemTotal + taxShare;
     };
 
-    const calculateGrandTotals = () => {
-        const personTotals: {
-            [key: string]: { owes: number; paid: number; balance: number };
-        } = {};
-        let grandTotal = 0;
-
-        people.forEach((person) => {
-            let personOwesTotal = 0;
-            let personPaidTotal = 0;
-
-            bills.forEach((bill) => {
-                personOwesTotal += calculatePersonOwesForBill(person.id, bill);
-                if (bill.paidBy === person.id) {
-                    const { effectiveTotal } = calculateBillTotals(bill);
-                    personPaidTotal += effectiveTotal;
-                }
-            });
-
-            personTotals[person.id] = {
-                owes: personOwesTotal,
-                paid: personPaidTotal,
-                balance: personPaidTotal - personOwesTotal,
-            };
-            grandTotal += personOwesTotal;
-        });
-
-        return { personTotals, grandTotal };
-    };
-
     const { subtotal, taxAndFees } = calculateBillTotals(activeBill);
-    const { personTotals, grandTotal } = calculateGrandTotals();
 
     return (
         <div className="min-h-screen bg-background p-4">
             <div className="max-w-6xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="text-center space-y-2">
-                    <div className="flex items-center justify-center gap-4">
-                        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-                            <Receipt className="h-8 w-8 text-primary" />
-                            Multi-Bill Splitter
-                        </h1>
+                    <div className="flex flex-col items-center justify-center">
+                        <Link href="/">
+                            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2 hover:underline hover:cursor-pointer">
+                                split.notwatermango.cc
+                            </h1>
+                        </Link>
+                        <p className="text-muted-foreground mb-3">
+                            Split multiple bills easily among friends
+                        </p>
                         <div className="flex gap-2">
                             <ModeToggle />
-                            <Button
-                                variant="outline"
-                                size="sm"
+                            <ResetButton onClick={resetAllData} />
+                            <BillSummaryButton />
+                            <ShareButton
                                 onClick={generateShareLink}
-                                className="border-primary/20 hover:text-primary-foreground hover:border-primary bg-primary/5 hover:bg-primary text-primary transition-all"
-                            >
-                                <Share2 className="h-4 w-4 mr-2" />
-                                {isCopied ? "Copied!" : "Share Bill"}
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={resetAllData}
-                                className="text-destructive-foreground bg-destructive border-destructive/20 hover:bg-destructive/70"
-                            >
-                                <RotateCcw className="h-4 w-4 mr-2" />
-                                Reset All
-                            </Button>
+                                isCopied={isCopied}
+                            />
                         </div>
                     </div>
-                    <p className="text-muted-foreground">
-                        Split multiple bills easily among friends
-                    </p>
                 </div>
 
                 {/* People Management */}
@@ -542,7 +463,7 @@ export default function MultiBillSplitter() {
                                 <Label htmlFor="bill-name">Add New Bill</Label>
                                 <Input
                                     id="bill-name"
-                                    placeholder="Enter bill name (e.g., 'Dinner at Restaurant')"
+                                    placeholder="Enter bill name (e.g., Restaurant ABC or Movie Ticket)"
                                     value={newBillName}
                                     onChange={(e) =>
                                         setNewBillName(e.target.value)
@@ -623,29 +544,14 @@ export default function MultiBillSplitter() {
                     </CardContent>
                 </Card>
 
-                {/* Current Bill Content */}
-                <Tabs value={openTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger
-                            value="current"
-                            onClick={() => setOpenTab("current")}
-                        >
-                            Current Bill: {activeBill?.name}
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="summary"
-                            onClick={() => setOpenTab("summary")}
-                        >
-                            Overall Summary
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="current" className="space-y-6">
+                {activeBillId && (
+                    <>
                         {/* Item Management for Current Bill */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>
-                                    Items ({activeBill?.items.length})
+                                    {activeBill?.name} Items (
+                                    {activeBill?.items.length})
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -849,231 +755,105 @@ export default function MultiBillSplitter() {
                                 </div>
                             </CardContent>
                         </Card>
+                    </>
+                )}
 
-                        {/* Current Bill Summary */}
-                        {people.length > 0 && activeBill?.items.length > 0 && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Calculator className="h-5 w-5" />
-                                        Summary of {activeBill?.name}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <span className="text-muted-foreground">
-                                                Subtotal:
-                                            </span>
-                                            <span className="float-right font-medium">
-                                                {rupiah(subtotal?.toFixed(2))}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="text-muted-foreground">
-                                                Tax & Fees:
-                                            </span>
-                                            <span className="float-right font-medium">
-                                                {rupiah(taxAndFees.toFixed(2))}
-                                            </span>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <Separator />
-                                        </div>
-                                        <div className="col-span-2">
-                                            <span className="font-semibold">
-                                                Total:
-                                            </span>
-                                            <span className="float-right font-semibold text-lg">
-                                                {rupiah(
-                                                    Math.max(
-                                                        activeBill?.totalBill ||
-                                                            0,
-                                                        subtotal
-                                                    ).toFixed(2)
-                                                )}
-                                            </span>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <span className="text-muted-foreground">
-                                                Paid By:
-                                            </span>
-                                            <span className="float-right font-medium text-details">
-                                                {activeBill?.paidBy
-                                                    ? people.find(
-                                                          (p) =>
-                                                              p.id ===
-                                                              activeBill.paidBy
-                                                      )?.name || "Unknown"
-                                                    : "Not specified"}
-                                            </span>
-                                        </div>
-                                    </div>
-
+                {/* Current Bill Summary */}
+                {people.length > 0 && activeBill?.items.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Calculator className="h-5 w-5" />
+                                Summary of {activeBill?.name}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="text-muted-foreground">
+                                        Subtotal:
+                                    </span>
+                                    <span className="float-right font-medium">
+                                        {rupiah(subtotal?.toFixed(2))}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span className="text-muted-foreground">
+                                        Tax & Fees:
+                                    </span>
+                                    <span className="float-right font-medium">
+                                        {rupiah(taxAndFees.toFixed(2))}
+                                    </span>
+                                </div>
+                                <div className="col-span-2">
                                     <Separator />
-
-                                    <div>
-                                        <h4 className="font-semibold mb-3">
-                                            Expense per person:
-                                        </h4>
-                                        <div className="space-y-2">
-                                            {people.map((person) => {
-                                                const owes =
-                                                    calculatePersonOwesForBill(
-                                                        person.id,
-                                                        activeBill
-                                                    );
-                                                return (
-                                                    <div
-                                                        key={person.id}
-                                                        className="flex justify-between items-center p-3 bg-muted rounded-lg"
-                                                    >
-                                                        <span className="font-medium">
-                                                            {person.name}
-                                                        </span>
-                                                        <span className="text-lg font-semibold">
-                                                            {rupiah(
-                                                                owes.toFixed(2)
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </TabsContent>
-
-                    <TabsContent value="summary" className="space-y-6">
-                        <Card>
-                            {/* Per-bill breakdown */}
-                            <CardHeader>
-                                <CardTitle className="font-semibold text-xl mb-4 flex items-center gap-2">
-                                    <Calculator className="h-5 w-5" />
-                                    Overall Summary - All Bills
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div>
-                                    <div className="space-y-4">
-                                        {bills.map((bill) => {
-                                            const {
-                                                subtotal: billSubtotal,
-                                                taxAndFees: billTaxAndFees,
-                                                effectiveTotal:
-                                                    billEffectiveTotal,
-                                            } = calculateBillTotals(bill);
-                                            return (
-                                                <Card
-                                                    key={bill.id}
-                                                    className="border-l-4 border-l-details"
-                                                >
-                                                    <CardContent className="pt-4">
-                                                        <div className="flex justify-between items-center mb-3">
-                                                            <h5 className="font-medium">
-                                                                {bill.name}
-                                                            </h5>
-                                                            <span className="font-semibold text-details">
-                                                                {rupiah(
-                                                                    billEffectiveTotal.toFixed(
-                                                                        2
-                                                                    )
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-                                                            <div>
-                                                                Items:{" "}
-                                                                {
-                                                                    bill.items
-                                                                        .length
-                                                                }
-                                                            </div>
-                                                            <div>
-                                                                Subtotal:{" "}
-                                                                {rupiah(
-                                                                    billSubtotal?.toFixed(
-                                                                        2
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                            <div>
-                                                                Tax & Fees:{" "}
-                                                                {rupiah(
-                                                                    billTaxAndFees.toFixed(
-                                                                        2
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                            <div>
-                                                                Paid By:{" "}
-                                                                <span className="font-medium text-details">
-                                                                    {bill.paidBy
-                                                                        ? people.find(
-                                                                              (
-                                                                                  p
-                                                                              ) =>
-                                                                                  p.id ===
-                                                                                  bill.paidBy
-                                                                          )
-                                                                              ?.name ||
-                                                                          "Unknown"
-                                                                        : "Not specified"}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            );
-                                        })}
-                                    </div>
-                                    <div className="flex justify-between items-center mt-6 pt-6 border-t font-semibold text-lg">
-                                        <h4>Grand Total - All Bills:</h4>
-                                        <span className="font-bold">
-                                            {rupiah(grandTotal.toFixed(2))}
-                                        </span>
-                                    </div>
                                 </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="font-semibold text-xl mb-4 flex items-center gap-2">
-                                    <Users2 className="h-5 w-5" />
-                                    Detailed Breakdown per Person
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {/* Detailed breakdown per person */}
-                                <div>
-                                    <div className="space-y-6">
-                                        {people.map((person) => {
-                                            return (
-                                                <PersonalBreakdownCard
-                                                    key={person.id}
-                                                    person={person}
-                                                    bills={bills}
-                                                    calculateBillTotals={
-                                                        calculateBillTotals
-                                                    }
-                                                    togglePersonBreakdown={
-                                                        togglePersonBreakdown
-                                                    }
-                                                    visiblePersonBreakdowns={
-                                                        visiblePersonBreakdowns
-                                                    }
-                                                    personTotals={personTotals}
-                                                />
-                                            );
-                                        })}
-                                    </div>
+                                <div className="col-span-2">
+                                    <span className="font-semibold">
+                                        Total:
+                                    </span>
+                                    <span className="float-right font-semibold text-lg">
+                                        {rupiah(
+                                            Math.max(
+                                                activeBill?.totalBill || 0,
+                                                subtotal
+                                            ).toFixed(2)
+                                        )}
+                                    </span>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
+                                <div className="col-span-2">
+                                    <span className="text-muted-foreground">
+                                        Paid By:
+                                    </span>
+                                    <span className="float-right font-medium text-details">
+                                        {activeBill?.paidBy
+                                            ? people.find(
+                                                  (p) =>
+                                                      p.id === activeBill.paidBy
+                                              )?.name || "Unknown"
+                                            : "Not specified"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <Separator />
+
+                            <div>
+                                <h4 className="font-semibold mb-3">
+                                    Expense per person:
+                                </h4>
+                                <div className="space-y-2">
+                                    {people.map((person) => {
+                                        const owes = calculatePersonOwesForBill(
+                                            person.id,
+                                            activeBill
+                                        );
+                                        return (
+                                            <div
+                                                key={person.id}
+                                                className="flex justify-between items-center p-3 bg-muted rounded-lg"
+                                            >
+                                                <span className="font-medium">
+                                                    {person.name}
+                                                </span>
+                                                <span className="text-lg font-semibold">
+                                                    {rupiah(owes.toFixed(2))}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* How to use this app? */}
+                <HowToUseCard
+                    generateShareLink={generateShareLink}
+                    resetAllData={resetAllData}
+                    isCopied={isCopied}
+                />
             </div>
         </div>
     );
