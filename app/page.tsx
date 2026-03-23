@@ -376,14 +376,14 @@ export default function MultiBillSplitter() {
     };
 
     const calculateBillTotals = (bill: Bill) => {
-        if (!bill) return { subtotal: 0, taxAndFees: 0 };
+        if (!bill) return { subtotal: 0, taxAndFees: 0, effectiveTotal: 0 };
         const subtotal = bill.items.reduce(
             (sum, item) => sum + item.finalPrice,
             0
         );
         const effectiveTotal = Math.max(bill.totalBill || 0, subtotal);
         const taxAndFees = effectiveTotal - subtotal;
-        return { subtotal, taxAndFees };
+        return { subtotal, taxAndFees, effectiveTotal };
     };
 
     const calculatePersonOwesForBill = (personId: string, bill: Bill) => {
@@ -419,8 +419,8 @@ export default function MultiBillSplitter() {
             bills.forEach((bill) => {
                 personOwesTotal += calculatePersonOwesForBill(person.id, bill);
                 if (bill.paidBy === person.id) {
-                    const { subtotal } = calculateBillTotals(bill);
-                    personPaidTotal += Math.max(bill.totalBill || 0, subtotal);
+                    const { effectiveTotal } = calculateBillTotals(bill);
+                    personPaidTotal += effectiveTotal;
                 }
             });
 
@@ -962,6 +962,8 @@ export default function MultiBillSplitter() {
                                             const {
                                                 subtotal: billSubtotal,
                                                 taxAndFees: billTaxAndFees,
+                                                effectiveTotal:
+                                                    billEffectiveTotal,
                                             } = calculateBillTotals(bill);
                                             return (
                                                 <Card
@@ -975,11 +977,9 @@ export default function MultiBillSplitter() {
                                                             </h5>
                                                             <span className="font-semibold text-details">
                                                                 {rupiah(
-                                                                    Math.max(
-                                                                        bill.totalBill ||
-                                                                            0,
-                                                                        billSubtotal
-                                                                    ).toFixed(2)
+                                                                    billEffectiveTotal.toFixed(
+                                                                        2
+                                                                    )
                                                                 )}
                                                             </span>
                                                         </div>

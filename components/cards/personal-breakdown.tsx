@@ -18,6 +18,7 @@ function PersonalBreakdownCard({
     calculateBillTotals: (bill: Bill) => {
         subtotal: number;
         taxAndFees: number;
+        effectiveTotal: number;
     };
     togglePersonBreakdown: (personId: string) => void;
     visiblePersonBreakdowns: Record<string, boolean>;
@@ -49,7 +50,7 @@ function PersonalBreakdownCard({
                 }
             });
 
-            const { subtotal: billSubtotal, taxAndFees: billTaxAndFees } =
+            const { subtotal: billSubtotal, taxAndFees: billTaxAndFees, effectiveTotal: billEffectiveTotal } =
                 calculateBillTotals(bill);
 
             const taxShare =
@@ -65,7 +66,15 @@ function PersonalBreakdownCard({
             });
 
             const billTotal = billItemsTotal + taxShare;
-            const amountPaid = bill.paidBy === person.id ? bill.totalBill : 0;
+            const amountPaid = bill.paidBy === person.id ? billEffectiveTotal : 0;
+            if (bill.name == "Defisit Kezia") {
+                console.log(bill);
+            }
+            if (person.name === "kez") {
+                console.log(bill.paidBy);
+                console.log(bill.paidBy == person.id);
+                console.log(amountPaid);
+            }
             const netOwesForBill = billTotal - amountPaid;
 
             personGrandTotal += netOwesForBill;
