@@ -477,7 +477,7 @@ export default function MultiBillSplitter() {
                                 variant="outline"
                                 size="sm"
                                 onClick={resetAllData}
-                                className="text-destructive hover:text-destructive-foreground hover:bg-destructive border-destructive/20 hover:border-destructive bg-transparent"
+                                className="text-destructive-foreground bg-destructive border-destructive/20 hover:bg-destructive/70"
                             >
                                 <RotateCcw className="h-4 w-4 mr-2" />
                                 Reset All
@@ -523,7 +523,7 @@ export default function MultiBillSplitter() {
                                 {people.map((person) => (
                                     <Badge
                                         key={person.id}
-                                        variant="secondary"
+                                        variant="outline"
                                         className="flex items-center gap-1"
                                     >
                                         {person.name}
@@ -613,7 +613,7 @@ export default function MultiBillSplitter() {
                                                             bill.name
                                                         );
                                                     }}
-                                                    className="ml-1 hover:text-blue-600"
+                                                    className="ml-1 hover:text-details"
                                                 >
                                                     <Edit2 className="h-3 w-3" />
                                                 </button>
@@ -978,14 +978,14 @@ export default function MultiBillSplitter() {
                                             return (
                                                 <Card
                                                     key={bill.id}
-                                                    className="border-l-4 border-l-blue-500"
+                                                    className="border-l-4 border-l-details"
                                                 >
                                                     <CardContent className="pt-4">
                                                         <div className="flex justify-between items-center mb-3">
                                                             <h5 className="font-medium">
                                                                 {bill.name}
                                                             </h5>
-                                                            <span className="font-semibold text-blue-600">
+                                                            <span className="font-semibold text-details">
                                                                 {rupiah(
                                                                     bill.totalBill.toFixed(
                                                                         2
@@ -1022,10 +1022,14 @@ export default function MultiBillSplitter() {
                                                                 <span className="font-medium text-primary">
                                                                     {bill.paidBy
                                                                         ? people.find(
-                                                                              (p) =>
+                                                                              (
+                                                                                  p
+                                                                              ) =>
                                                                                   p.id ===
                                                                                   bill.paidBy
-                                                                          )?.name || "Unknown"
+                                                                          )
+                                                                              ?.name ||
+                                                                          "Unknown"
                                                                         : "Not specified"}
                                                                 </span>
                                                             </div>
@@ -1143,7 +1147,7 @@ export default function MultiBillSplitter() {
                                             return (
                                                 <Card
                                                     key={person.id}
-                                                    className="border-l-4 border-l-indigo-500"
+                                                    className="border-l-4 border-l-details"
                                                 >
                                                     <CardContent className="pt-4">
                                                         <div className="flex justify-between items-center mb-4">
@@ -1154,8 +1158,8 @@ export default function MultiBillSplitter() {
                                                                 className={`text-xl font-bold ${
                                                                     personGrandTotal <
                                                                     0
-                                                                        ? "text-green-700"
-                                                                        : "text-red-700"
+                                                                        ? "text-income"
+                                                                        : "text-deficit"
                                                                 }`}
                                                             >
                                                                 {personGrandTotal <
@@ -1193,7 +1197,7 @@ export default function MultiBillSplitter() {
                                                                             className="bg-muted/50 rounded-lg p-4"
                                                                         >
                                                                             <div className="flex justify-between items-center mb-3">
-                                                                                <h6 className="font-medium text-blue-700">
+                                                                                <h6 className="font-medium text-details">
                                                                                     {
                                                                                         bill.name
                                                                                     }
@@ -1202,13 +1206,13 @@ export default function MultiBillSplitter() {
                                                                                     className={`font-semibold ${
                                                                                         netOwesForBill <
                                                                                         0
-                                                                                            ? "text-indigo-600"
-                                                                                            : "text-blue-700"
+                                                                                            ? "text-income"
+                                                                                            : "text-details"
                                                                                     }`}
                                                                                 >
                                                                                     {netOwesForBill <
                                                                                     0
-                                                                                        ? "-"
+                                                                                        ? "("
                                                                                         : ""}
                                                                                     {rupiah(
                                                                                         Math.abs(
@@ -1217,6 +1221,10 @@ export default function MultiBillSplitter() {
                                                                                             2
                                                                                         )
                                                                                     )}
+                                                                                    {netOwesForBill <
+                                                                                    0
+                                                                                        ? ")"
+                                                                                        : ""}
                                                                                 </span>
                                                                             </div>
 
@@ -1281,19 +1289,21 @@ export default function MultiBillSplitter() {
                                                                                 )}
                                                                                 {amountPaid >
                                                                                     0 && (
-                                                                                    <div className="flex justify-between items-center text-sm border-t border-indigo-200 pt-2 mt-2 font-semibold text-green-700">
+                                                                                    <div className="flex justify-between items-center text-sm border-t border-details-border pt-2 mt-2 font-semibold text-income">
                                                                                         <span>
                                                                                             Paid
                                                                                             for
                                                                                             bill
                                                                                         </span>
                                                                                         <span>
-                                                                                            -
+                                                                                            (
                                                                                             {rupiah(
                                                                                                 amountPaid.toFixed(
                                                                                                     2
                                                                                                 )
                                                                                             )}
+
+                                                                                            )
                                                                                         </span>
                                                                                     </div>
                                                                                 )}
@@ -1358,8 +1368,8 @@ export default function MultiBillSplitter() {
                                                         balance === 0
                                                             ? "bg-muted"
                                                             : isOwed
-                                                            ? "bg-green-50 border-green-200"
-                                                            : "bg-red-50 border-red-200"
+                                                            ? "bg-income-muted border-income-border"
+                                                            : "bg-deficit-muted border-deficit-border"
                                                     }`}
                                                 >
                                                     <div className="flex justify-between items-center mb-2">
@@ -1387,8 +1397,8 @@ export default function MultiBillSplitter() {
                                                                 balance === 0
                                                                     ? "text-muted-foreground"
                                                                     : isOwed
-                                                                    ? "text-green-600"
-                                                                    : "text-red-600"
+                                                                    ? "text-income"
+                                                                    : "text-deficit"
                                                             }`}
                                                         >
                                                             {balance > 0
@@ -1406,8 +1416,8 @@ export default function MultiBillSplitter() {
                                                     <div
                                                         className={`text-right text-sm font-semibold ${
                                                             isOwed
-                                                                ? "text-green-700"
-                                                                : "text-red-700"
+                                                                ? "text-income"
+                                                                : "text-deficit"
                                                         }`}
                                                     >
                                                         {balanceText}
