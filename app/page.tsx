@@ -20,6 +20,7 @@ import {
     RotateCcw,
     Share2,
 } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
 
 interface Person {
     id: string;
@@ -462,6 +463,7 @@ export default function MultiBillSplitter() {
                             Multi-Bill Splitter
                         </h1>
                         <div className="flex gap-2">
+                            <ModeToggle />
                             <Button
                                 variant="outline"
                                 size="sm"
