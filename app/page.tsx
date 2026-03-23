@@ -379,7 +379,7 @@ export default function MultiBillSplitter() {
                 <div className="text-center space-y-2">
                     <div className="flex flex-col items-center justify-center">
                         <Link href="/">
-                            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2 hover:underline hover:cursor-pointer">
+                            <h1 className="text-3xl font-bold text-foreground flex gap-2 hover:underline hover:cursor-pointer items-center">
                                 split.notwatermango.cc
                             </h1>
                         </Link>
@@ -835,10 +835,11 @@ export default function MultiBillSplitter() {
                                 </h4>
                                 <div className="space-y-2">
                                     {people.map((person) => {
-                                        const owes = calculatePersonOwesForBill(
-                                            person.id,
-                                            activeBill,
-                                        );
+                                        const owesForBill =
+                                            calculatePersonOwesForBill(
+                                                person.id,
+                                                activeBill,
+                                            );
                                         return (
                                             <div
                                                 key={person.id}
@@ -848,7 +849,9 @@ export default function MultiBillSplitter() {
                                                     {person.name}
                                                 </span>
                                                 <span className="text-lg font-semibold">
-                                                    {rupiah(owes.toFixed(2))}
+                                                    {rupiah(
+                                                        owesForBill.toFixed(2),
+                                                    )}
                                                 </span>
                                             </div>
                                         );

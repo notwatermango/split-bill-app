@@ -151,7 +151,7 @@ export default function SuggestedPaymentsCard({
                                 >
                                     {/* Index + People Flow */}
                                     <div className="flex items-center gap-3">
-                                        <span className="flex-shrink-0 w-5 text-xs font-mono text-muted-foreground/50 select-none">
+                                        <span className="shrink-0 w-5 text-xs font-mono text-muted-foreground/50 select-none">
                                             {i + 1}.
                                         </span>
 
