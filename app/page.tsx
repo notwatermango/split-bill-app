@@ -225,6 +225,10 @@ export default function MultiBillSplitter() {
         );
     };
 
+    const handleRenamePerson = (id: string, name: string) => {
+        setPeople(people.map((p) => (p.id === id ? { ...p, name } : p)));
+    };
+
     // Bills callbacks
     const handleAddBill = (name: string) => {
         const bill: Bill = {
@@ -289,6 +293,26 @@ export default function MultiBillSplitter() {
                           ...bill,
                           items: bill.items.filter(
                               (item) => item.id !== itemId,
+                          ),
+                      }
+                    : bill,
+            ),
+        );
+    };
+
+    const handleEditItem = (
+        itemId: string,
+        updates: Partial<Pick<Item, "name" | "price" | "quantity" | "finalPrice">>,
+    ) => {
+        setBills(
+            bills.map((bill) =>
+                bill.id === activeBillId
+                    ? {
+                          ...bill,
+                          items: bill.items.map((item) =>
+                              item.id === itemId
+                                  ? { ...item, ...updates }
+                                  : item,
                           ),
                       }
                     : bill,
@@ -376,6 +400,7 @@ export default function MultiBillSplitter() {
                     people={people}
                     onAddPerson={handleAddPerson}
                     onRemovePerson={handleRemovePerson}
+                    onRenamePerson={handleRenamePerson}
                 />
 
                 {/* Bills Management */}
@@ -396,6 +421,7 @@ export default function MultiBillSplitter() {
                             people={people}
                             onAddItem={handleAddItem}
                             onRemoveItem={handleRemoveItem}
+                            onEditItem={handleEditItem}
                             onTogglePersonAssignment={
                                 handleTogglePersonAssignment
                             }
