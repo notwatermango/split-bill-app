@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SelectableBadge } from "@/components/ui/selectable-badge";
 import { Bill, Item, Person } from "@/lib/types";
-import { rupiah } from "@/lib/utils";
+import { cn, rupiah } from "@/lib/utils";
 import {
     Check,
     ClipboardList,
@@ -48,7 +48,7 @@ function ItemsCard({
     const [newItem, setNewItem] = useState({
         name: "",
         price: "",
-        quantity: "1",
+        quantity: "",
     });
     const itemNameRef = useRef<HTMLInputElement>(null);
     const itemPriceRef = useRef<HTMLInputElement>(null);
@@ -115,6 +115,18 @@ function ItemsCard({
                         <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                             {activeBill?.items.length}
                         </span>
+                        {activeBill?.items.some(
+                            (item) => item.assignedTo.length === 0,
+                        ) && (
+                            <span className="inline-flex items-center justify-center rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                                {
+                                    activeBill.items.filter(
+                                        (i) => i.assignedTo.length === 0,
+                                    ).length
+                                }{" "}
+                                unassigned
+                            </span>
+                        )}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -195,7 +207,12 @@ function ItemsCard({
                     {activeBill?.items.map((item) => (
                         <Card
                             key={item.id}
-                            className="border-l-4 border-l-primary relative group"
+                            className={cn(
+                                "border-l-4 relative group",
+                                item.assignedTo.length === 0
+                                    ? "border-l-destructive"
+                                    : "border-l-primary",
+                            )}
                         >
                             {/* Action overlay (shared by desktop ⋯ click and mobile long-press) */}
                             {activeActionItemId === item.id && (
@@ -412,6 +429,12 @@ function ItemsCard({
                                                     ).toFixed(2),
                                                 )}{" "}
                                                 per person
+                                            </p>
+                                        )}
+                                        {item.assignedTo.length === 0 && (
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Click the names above to assign
+                                                this item
                                             </p>
                                         )}
                                     </div>

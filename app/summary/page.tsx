@@ -8,8 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DEFAULT_BILLS, STORAGE_KEYS } from "@/lib/constants";
 import { Bill, Person } from "@/lib/types";
-import { calculateSuggestedPayments, rupiah } from "@/lib/utils";
-import { Calculator, CreditCard, Share2, Users2 } from "lucide-react";
+import { calculateSuggestedPayments, cn, rupiah } from "@/lib/utils";
+import {
+    AlertTriangle,
+    Calculator,
+    CreditCard,
+    Share2,
+    Users2,
+} from "lucide-react";
 import LZString from "lz-string";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -213,6 +219,10 @@ export default function MultiBillSplitter() {
     };
 
     const { personTotals, grandTotal } = calculateGrandTotals();
+    const isAnyBillUnfinished = bills.some((bill) =>
+        bill.items.some((item) => item.assignedTo.length === 0),
+    );
+    const isAnyBillUnpaid = bills.some((bill) => !bill.paidBy);
     const suggestedPayments = calculateSuggestedPayments(people, personTotals);
 
     return (
@@ -234,6 +244,49 @@ export default function MultiBillSplitter() {
                         </div>
                     </div>
                 </div>
+
+                {isAnyBillUnpaid && (
+                    <Card className="border-destructive bg-destructive/5">
+                        <CardContent className="pt-6">
+                            <div className="flex items-start gap-3">
+                                <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                                <div className="space-y-1">
+                                    <h4 className="font-semibold text-destructive">
+                                        Some bills "Paid By" is not specified
+                                    </h4>
+                                    <p className="text-sm text-muted-foreground">
+                                        Some bills doesn't have a "Paid By"
+                                        person. This will make the calculation
+                                        inaccurate because the unpaid bills'
+                                        cost won't be distributed to anyone.
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {isAnyBillUnfinished && (
+                    <Card className="border-destructive bg-destructive/5">
+                        <CardContent className="pt-6">
+                            <div className="flex items-start gap-3">
+                                <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                                <div className="space-y-1">
+                                    <h4 className="font-semibold text-destructive">
+                                        Some items are unassigned
+                                    </h4>
+                                    <p className="text-sm text-muted-foreground">
+                                        Some bills have items that hasn't been
+                                        assigned to anyone. This will make the
+                                        calculation inaccurate because the
+                                        unassigned items' cost won't be
+                                        distributed to anyone.
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
                 <SuggestedPaymentsCard
                     suggestedPayments={suggestedPayments}
                     people={people}
@@ -293,7 +346,17 @@ export default function MultiBillSplitter() {
                                     return (
                                         <Card
                                             key={bill.id}
-                                            className="border-l-4 border-l-details"
+                                            className={cn(
+                                                "border-l-4",
+                                                bill.paidBy &&
+                                                    bill.items.every(
+                                                        (item) =>
+                                                            item.assignedTo
+                                                                .length > 0,
+                                                    )
+                                                    ? "border-l-details"
+                                                    : "border-l-destructive",
+                                            )}
                                         >
                                             <CardContent className="py-4">
                                                 <div className="flex justify-between items-center mb-3">
@@ -311,7 +374,14 @@ export default function MultiBillSplitter() {
                                                 <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                                                     <div>
                                                         Paid By:{" "}
-                                                        <span className="font-medium text-details">
+                                                        <span
+                                                            className={cn(
+                                                                "font-medium",
+                                                                bill.paidBy
+                                                                    ? "text-details"
+                                                                    : "text-destructive",
+                                                            )}
+                                                        >
                                                             {bill.paidBy
                                                                 ? people.find(
                                                                       (p) =>
@@ -334,44 +404,59 @@ export default function MultiBillSplitter() {
                                                                         }
                                                                         className="flex justify-between items-center text-sm"
                                                                     >
-                                                                        <span className="text-muted-foreground">
-                                                                            <span className="text-details">
+                                                                        <div className="flex flex-row flex-wrap gap-x-2">
+                                                                            <span
+                                                                                className={cn(
+                                                                                    "font-medium transition-colors",
+                                                                                    item
+                                                                                        .assignedTo
+                                                                                        .length ===
+                                                                                        0
+                                                                                        ? "text-destructive"
+                                                                                        : "text-muted-foreground",
+                                                                                )}
+                                                                            >
+                                                                                <span className="text-details">
+                                                                                    {
+                                                                                        item.quantity
+                                                                                    }{" "}
+                                                                                </span>
                                                                                 {
-                                                                                    item.quantity
-                                                                                }{" "}
+                                                                                    item.name
+                                                                                }
+                                                                                {item
+                                                                                    .assignedTo
+                                                                                    .length ===
+                                                                                    0 &&
+                                                                                    " (unassigned)"}
                                                                             </span>
-                                                                            {
-                                                                                item.name
-                                                                            }
-                                                                            <span className="text-xs ml-1">
+                                                                            <div className="flex text-xs flex-wrap gap-1 mt-0.5">
                                                                                 {item.assignedTo.map(
                                                                                     (
-                                                                                        person,
-                                                                                    ) => {
-                                                                                        return (
-                                                                                            <span
-                                                                                                key={
-                                                                                                    person
-                                                                                                }
-                                                                                                className="text-details"
-                                                                                            >
-                                                                                                {
-                                                                                                    people.find(
-                                                                                                        (
-                                                                                                            p,
-                                                                                                        ) =>
-                                                                                                            p.id ===
-                                                                                                            person,
-                                                                                                    )
-                                                                                                        ?.name
-                                                                                                }{" "}
-                                                                                            </span>
-                                                                                        );
-                                                                                    },
+                                                                                        personId,
+                                                                                    ) => (
+                                                                                        <span
+                                                                                            key={
+                                                                                                personId
+                                                                                            }
+                                                                                            className="text-primary"
+                                                                                        >
+                                                                                            {
+                                                                                                people.find(
+                                                                                                    (
+                                                                                                        p,
+                                                                                                    ) =>
+                                                                                                        p.id ===
+                                                                                                        personId,
+                                                                                                )
+                                                                                                    ?.name
+                                                                                            }
+                                                                                        </span>
+                                                                                    ),
                                                                                 )}
-                                                                            </span>
-                                                                        </span>
-                                                                        <span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <span className="shrink-0 ml-4 font-mono text-xs">
                                                                             {rupiah(
                                                                                 (
                                                                                     item.price *

@@ -29,6 +29,11 @@ function TotalPaidCard({
                 <CardTitle className="flex items-center gap-2">
                     <CreditCard className="h-5 w-5" />
                     Total Paid
+                    {!activeBill.paidBy && (
+                        <span className="inline-flex items-center justify-center rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                            select payer
+                        </span>
+                    )}
                 </CardTitle>
             </CardHeader>
             <CardContent>

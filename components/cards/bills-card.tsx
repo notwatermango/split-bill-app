@@ -11,8 +11,14 @@ import { Bill } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
     Check,
+    Circle,
+    CircleAlert,
+    Dot,
+    DotIcon,
     Edit2,
     FileText,
+    FileWarning,
+    MessageCircleWarning,
     MoreHorizontal,
     Plus,
     Trash2,
@@ -91,6 +97,26 @@ function BillsCard({
                         <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                             {bills.length}
                         </span>
+                        {bills.some(
+                            (bill) =>
+                                bill.items.some(
+                                    (item) => item.assignedTo.length === 0,
+                                ) || !bill.paidBy,
+                        ) && (
+                            <span className="inline-flex items-center justify-center rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                                {
+                                    bills.filter(
+                                        (bill) =>
+                                            bill.items.some(
+                                                (item) =>
+                                                    item.assignedTo.length ===
+                                                    0,
+                                            ) || !bill.paidBy,
+                                    ).length
+                                }{" "}
+                                incomplete
+                            </span>
+                        )}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -224,7 +250,7 @@ function BillsCard({
                                             : "outline"
                                     }
                                     className={cn(
-                                        "cursor-pointer pr-0 justify-between min-w-20 flex items-center gap-1 select-none max-w-[180px] min-h-8",
+                                        "cursor-pointer pr-0 pl-4 justify-between min-w-20 flex items-center gap-1 select-none max-w-[180px] min-h-8",
                                     )}
                                     onClick={() => {
                                         if (!editingBillId)
@@ -234,6 +260,16 @@ function BillsCard({
                                     onTouchEnd={longPress.cancel}
                                     onTouchMove={longPress.move}
                                 >
+                                    {(bill.items.some(
+                                        (item) => item.assignedTo.length === 0,
+                                    ) ||
+                                        !bill.paidBy) && (
+                                        <Circle
+                                            className={cn(
+                                                "h-4 w-4 absolute -top-1.5 -right-2 text-destructive/80 fill-destructive",
+                                            )}
+                                        />
+                                    )}
                                     <span className="truncate">
                                         {bill.name}
                                     </span>
