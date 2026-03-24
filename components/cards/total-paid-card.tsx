@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Bill, Person } from "@/lib/types";
+import { CreditCard } from "lucide-react";
 
 interface TotalPaidCardProps {
     activeBill: Bill;
@@ -25,7 +26,10 @@ function TotalPaidCard({
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Total Paid</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Total Paid
+                </CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="flex gap-4 items-end flex-col sm:flex-row">
