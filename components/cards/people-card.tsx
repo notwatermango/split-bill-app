@@ -103,6 +103,7 @@ function PeopleCard({
                                     onKeyDown={(e) =>
                                         e.key === "Enter" && handleAddPerson()
                                     }
+                                    enterKeyHint="send"
                                 />
                             </div>
                             <Button

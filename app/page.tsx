@@ -17,6 +17,7 @@ import { Bill, Item, Person } from "@/lib/types";
 import LZString from "lz-string";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export default function MultiBillSplitter() {
     const [people, setPeople] = useState<Person[]>([]);
@@ -203,9 +204,10 @@ export default function MultiBillSplitter() {
     // People callbacks
     const handleAddPerson = (name: string) => {
         const person: Person = {
-            id: Date.now().toString(),
+            id: uuidv4(),
             name,
         };
+        // TODO(error-handling): if person has same name, definitely prompt user to rename it.
         setPeople([...people, person]);
     };
 
@@ -232,12 +234,13 @@ export default function MultiBillSplitter() {
     // Bills callbacks
     const handleAddBill = (name: string) => {
         const bill: Bill = {
-            id: Date.now().toString(),
+            id: uuidv4(),
             name,
             items: [],
             totalBill: 0,
             createdAt: new Date(),
         };
+        // TODO(error-handling): if bill has same name, maybe we should prompt user to rename it?
         setBills([...bills, bill]);
         setActiveBillId(bill.id);
     };
@@ -266,8 +269,12 @@ export default function MultiBillSplitter() {
     }) => {
         const price = Number.parseFloat(newItem.price);
         const quantity = Number.parseInt(newItem.quantity) || 1;
+        if (price <= 0 || quantity <= 0) {
+            // TODO(error-handling)
+            return;
+        }
         const item: Item = {
-            id: Date.now().toString(),
+            id: uuidv4(),
             name: newItem.name.trim(),
             price,
             quantity,

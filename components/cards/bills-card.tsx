@@ -11,7 +11,6 @@ import { Bill } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
     Check,
-    CircleEllipsis,
     Edit2,
     FileText,
     MoreHorizontal,
@@ -110,6 +109,7 @@ function BillsCard({
                                     onKeyDown={(e) =>
                                         e.key === "Enter" && handleAddBill()
                                     }
+                                    enterKeyHint="send"
                                 />
                             </div>
                             <Button

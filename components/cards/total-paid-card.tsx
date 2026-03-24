@@ -50,6 +50,11 @@ function TotalPaidCard({
                                     Number.parseFloat(e.target.value) || 0,
                                 )
                             }
+                            onKeyDown={(e) =>
+                                e.key === "Enter" &&
+                                (e.target as HTMLInputElement).blur()
+                            }
+                            enterKeyHint="done"
                         />
                     </div>
                     <div className="flex-1 w-full sm:w-auto">

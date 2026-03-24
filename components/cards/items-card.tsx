@@ -51,6 +51,8 @@ function ItemsCard({
         quantity: "1",
     });
     const itemNameRef = useRef<HTMLInputElement>(null);
+    const itemPriceRef = useRef<HTMLInputElement>(null);
+    const itemQuantityRef = useRef<HTMLInputElement>(null);
 
     // Which item is showing its action overlay (⋯ or long-press)
     const [activeActionItemId, setActiveActionItemId] = useState<string | null>(
@@ -72,7 +74,7 @@ function ItemsCard({
     const handleAddItem = () => {
         if (newItem.name.trim() && newItem.price) {
             onAddItem(newItem);
-            setNewItem({ name: "", price: "", quantity: "1" });
+            setNewItem({ name: "", price: "", quantity: "" });
         }
         if (itemNameRef.current) itemNameRef.current.focus();
     };
@@ -132,13 +134,16 @@ function ItemsCard({
                                     })
                                 }
                                 onKeyDown={(e) =>
-                                    e.key === "Enter" && handleAddItem()
+                                    e.key === "Enter" &&
+                                    itemPriceRef.current?.focus()
                                 }
+                                enterKeyHint="next"
                             />
                         </div>
                         <div>
                             <Label htmlFor="item-price">Price</Label>
                             <Input
+                                ref={itemPriceRef}
                                 id="item-price"
                                 type="number"
                                 step="0.01"
@@ -151,16 +156,19 @@ function ItemsCard({
                                     })
                                 }
                                 onKeyDown={(e) =>
-                                    e.key === "Enter" && handleAddItem()
+                                    e.key === "Enter" &&
+                                    itemQuantityRef.current?.focus()
                                 }
+                                enterKeyHint="next"
                             />
                         </div>
                         <div>
                             <Label htmlFor="item-quantity">Quantity</Label>
                             <Input
+                                ref={itemQuantityRef}
                                 id="item-quantity"
                                 type="number"
-                                min="1"
+                                placeholder="1"
                                 value={newItem.quantity}
                                 onChange={(e) =>
                                     setNewItem({
@@ -171,6 +179,7 @@ function ItemsCard({
                                 onKeyDown={(e) =>
                                     e.key === "Enter" && handleAddItem()
                                 }
+                                enterKeyHint="send"
                             />
                         </div>
                         <Button
