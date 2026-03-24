@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import LZString from "lz-string";
-import { ModeToggle } from "@/components/mode-toggle";
-import { Person, Item, Bill } from "@/lib/types";
-import Link from "next/link";
-import { DEFAULT_BILLS, STORAGE_KEYS } from "@/lib/constants";
 import {
     BillSummaryButton,
     ResetButton,
     ShareButton,
 } from "@/components/action-buttons";
-import { HowToUseCard } from "@/components/cards/how-to-use";
-import { PeopleCard } from "@/components/cards/people-card";
-import { BillsCard } from "@/components/cards/bills-card";
-import { ItemsCard } from "@/components/cards/items-card";
-import { TotalPaidCard } from "@/components/cards/total-paid-card";
 import { BillSummaryCard } from "@/components/cards/bill-summary-card";
+import { BillsCard } from "@/components/cards/bills-card";
+import { HowToUseCard } from "@/components/cards/how-to-use-card";
+import { ItemsCard } from "@/components/cards/items-card";
+import { PeopleCard } from "@/components/cards/people-card";
+import { TotalPaidCard } from "@/components/cards/total-paid-card";
+import { ModeToggle } from "@/components/mode-toggle";
+import { DEFAULT_BILLS, STORAGE_KEYS } from "@/lib/constants";
+import { Bill, Item, Person } from "@/lib/types";
+import LZString from "lz-string";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function MultiBillSplitter() {
     const [people, setPeople] = useState<Person[]>([]);
@@ -254,9 +254,7 @@ export default function MultiBillSplitter() {
 
     const handleRenameBill = (id: string, name: string) => {
         setBills(
-            bills.map((bill) =>
-                bill.id === id ? { ...bill, name } : bill,
-            ),
+            bills.map((bill) => (bill.id === id ? { ...bill, name } : bill)),
         );
     };
 
@@ -302,7 +300,9 @@ export default function MultiBillSplitter() {
 
     const handleEditItem = (
         itemId: string,
-        updates: Partial<Pick<Item, "name" | "price" | "quantity" | "finalPrice">>,
+        updates: Partial<
+            Pick<Item, "name" | "price" | "quantity" | "finalPrice">
+        >,
     ) => {
         setBills(
             bills.map((bill) =>
@@ -320,10 +320,7 @@ export default function MultiBillSplitter() {
         );
     };
 
-    const handleTogglePersonAssignment = (
-        itemId: string,
-        personId: string,
-    ) => {
+    const handleTogglePersonAssignment = (itemId: string, personId: string) => {
         setBills(
             bills.map((bill) =>
                 bill.id === activeBillId
@@ -446,9 +443,7 @@ export default function MultiBillSplitter() {
                         people={people}
                         subtotal={subtotal}
                         taxAndFees={taxAndFees}
-                        calculatePersonOwesForBill={
-                            calculatePersonOwesForBill
-                        }
+                        calculatePersonOwesForBill={calculatePersonOwesForBill}
                     />
                 )}
 

@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import LZString from "lz-string";
+import { PersonalBreakdownCard } from "@/components/cards/personal-breakdown-card";
+import SuggestedPaymentsCard from "@/components/cards/suggested-payments-card";
+import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, CreditCard, Share2, Users2 } from "lucide-react";
-import { ModeToggle } from "@/components/mode-toggle";
-import { PersonalBreakdownCard } from "@/components/cards/personal-breakdown";
-import { Person, Bill } from "@/lib/types";
-import { calculateSuggestedPayments, rupiah } from "@/lib/utils";
-import Link from "next/link";
 import { DEFAULT_BILLS, STORAGE_KEYS } from "@/lib/constants";
-import SuggestedPaymentsCard from "@/components/cards/suggested-payments";
+import { Bill, Person } from "@/lib/types";
+import { calculateSuggestedPayments, rupiah } from "@/lib/utils";
+import { Calculator, CreditCard, Share2, Users2 } from "lucide-react";
+import LZString from "lz-string";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 export default function MultiBillSplitter() {
     const [people, setPeople] = useState<Person[]>([]);
