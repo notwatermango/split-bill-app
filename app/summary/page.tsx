@@ -1,5 +1,6 @@
 "use client";
 
+import { ShareButton } from "@/components/action-buttons";
 import { PersonalBreakdownCard } from "@/components/cards/personal-breakdown-card";
 import SuggestedPaymentsCard from "@/components/cards/suggested-payments-card";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -226,15 +227,10 @@ export default function MultiBillSplitter() {
                         </Link>
                         <div className="flex items-center gap-2">
                             <ModeToggle />
-                            <Button
-                                variant="outline"
-                                size="sm"
+                            <ShareButton
                                 onClick={generateShareLink}
-                                className="border-primary/20 hover:text-primary-foreground hover:border-primary bg-primary/5 hover:bg-primary text-primary transition-all"
-                            >
-                                <Share2 className="h-4 w-4" />
-                                {isCopied ? "Copied!" : "Share Bill"}
-                            </Button>
+                                isCopied={isCopied}
+                            />
                         </div>
                     </div>
                 </div>

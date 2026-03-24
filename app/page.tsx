@@ -380,7 +380,7 @@ export default function MultiBillSplitter() {
                         <p className="text-muted-foreground mb-3">
                             Split multiple bills easily among friends
                         </p>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap justify-center gap-2">
                             <ModeToggle />
                             <ResetButton onClick={resetAllData} />
                             <BillSummaryButton />

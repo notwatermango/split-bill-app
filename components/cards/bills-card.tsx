@@ -11,6 +11,7 @@ import { Bill } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
     Check,
+    CircleEllipsis,
     Edit2,
     FileText,
     MoreHorizontal,
@@ -199,7 +200,7 @@ function BillsCard({
                                                             ) ?? null,
                                                         );
                                                     }}
-                                                    className="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10 rounded"
+                                                    className="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-destructive dark:text-red-500 dark:hover:text-red-400 hover:bg-destructive/10 rounded"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                     Delete
@@ -223,7 +224,7 @@ function BillsCard({
                                             : "outline"
                                     }
                                     className={cn(
-                                        "cursor-pointer flex items-center gap-1 select-none max-w-[180px] min-h-8",
+                                        "cursor-pointer pr-0 justify-between min-w-20 flex items-center gap-1 select-none max-w-[180px] min-h-8",
                                     )}
                                     onClick={() => {
                                         if (!editingBillId)
@@ -243,7 +244,7 @@ function BillsCard({
                                             e.stopPropagation();
                                             setActiveBillActionId(bill.id);
                                         }}
-                                        className="hidden sm:block ml-1 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                        className="block h-full ml-1 py-1 px-2 rounded sm:opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                                         aria-label={`Options for ${bill.name}`}
                                     >
                                         <MoreHorizontal className="h-4 w-4" />

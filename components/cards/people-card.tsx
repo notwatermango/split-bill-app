@@ -10,6 +10,7 @@ import { useLongPress } from "@/hooks/use-long-press";
 import { Person } from "@/lib/types";
 import {
     Check,
+    CircleEllipsis,
     Edit2,
     MoreHorizontal,
     Plus,
@@ -188,7 +189,7 @@ function PeopleCard({
                                                             name: person.name,
                                                         });
                                                     }}
-                                                    className="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10 rounded"
+                                                    className="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-destructive dark:text-red-500 dark:hover:text-red-400 hover:bg-destructive/10 rounded"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                     Remove
@@ -206,7 +207,7 @@ function PeopleCard({
 
                                     <Badge
                                         variant="primary"
-                                        className="flex items-center gap-1 select-none min-h-8"
+                                        className="flex items-center justify-between gap-1 select-none min-h-8 min-w-20 pr-0"
                                         onTouchStart={longPress.start(
                                             person.id,
                                         )}
@@ -220,7 +221,7 @@ function PeopleCard({
                                                 e.stopPropagation();
                                                 setActivePersonId(person.id);
                                             }}
-                                            className="hidden sm:block ml-1 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-primary"
+                                            className="block h-full ml-1 py-1 px-2 rounded sm:opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-primary"
                                             aria-label={`Options for ${person.name}`}
                                         >
                                             <MoreHorizontal className="h-4 w-4" />

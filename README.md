@@ -17,8 +17,8 @@ This project costs me nothing to build and host in [split.notwatermango.cc](http
 - **Calculate payment** – Automatically figures out the grand totals and suggest least transfer combination.
 - **Share via link** – Generates a URL containing all your bill data to easily share with friends.
 - **Local storage** – Automatically saves your session data to your browser so you never lose it on refresh.
+- **Responsive design** - Mobile friendly
 - **Dark mode**
-- 🩴 **(Kinda) Responsive design** - Okay-ish on mobile, but not the best for inputting bills there.
 - ⏳ **(TBA) Shorter share link URL**
 - ⏳ **(TBA) Currencies** - Now only IDR 🇮🇩
 
