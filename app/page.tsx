@@ -11,6 +11,7 @@ import { HowToUseCard } from "@/components/cards/how-to-use-card";
 import { ItemsCard } from "@/components/cards/items-card";
 import { PeopleCard } from "@/components/cards/people-card";
 import { TotalPaidCard } from "@/components/cards/total-paid-card";
+import { CurrencySelector } from "@/components/currency-selector";
 import { ModeToggle } from "@/components/mode-toggle";
 import { DEFAULT_BILLS, STORAGE_KEYS } from "@/lib/constants";
 import { Bill, Item, Person } from "@/lib/types";
@@ -23,6 +24,7 @@ export default function MultiBillSplitter() {
     const [people, setPeople] = useState<Person[]>([]);
     const [bills, setBills] = useState<Bill[]>([]);
     const [activeBillId, setActiveBillId] = useState("");
+    const [currencyCode, setCurrencyCode] = useState("");
     const [isCopied, setIsCopied] = useState(false);
 
     // Initial Load: Check URL Hash first, then fallback to LocalStorage
@@ -38,6 +40,8 @@ export default function MultiBillSplitter() {
                     const parsedData = JSON.parse(decompressed);
 
                     if (parsedData.people) setPeople(parsedData.people);
+                    if (parsedData.currencyCode)
+                        setCurrencyCode(parsedData.currencyCode);
 
                     if (parsedData.bills) {
                         const parsedBills = parsedData.bills.map(
@@ -73,9 +77,14 @@ export default function MultiBillSplitter() {
             const savedActiveBillId = localStorage.getItem(
                 STORAGE_KEYS.ACTIVE_BILL_ID,
             );
+            const savedCurrency = localStorage.getItem(STORAGE_KEYS.CURRENCY);
 
             if (savedPeople) {
                 setPeople(JSON.parse(savedPeople));
+            }
+
+            if (savedCurrency) {
+                setCurrencyCode(savedCurrency);
             }
 
             if (savedBills) {
@@ -121,6 +130,14 @@ export default function MultiBillSplitter() {
         }
     }, [activeBillId]);
 
+    useEffect(() => {
+        // Only save if it's different from what's already there to avoid unnecessary writes
+        const saved = localStorage.getItem(STORAGE_KEYS.CURRENCY);
+        if (currencyCode && currencyCode !== saved) {
+            localStorage.setItem(STORAGE_KEYS.CURRENCY, currencyCode);
+        }
+    }, [currencyCode]);
+
     // --- Shared state & derived values ---
     const activeBill =
         bills.find((bill) => bill.id === activeBillId) || bills[0];
@@ -165,6 +182,7 @@ export default function MultiBillSplitter() {
             people,
             bills,
             activeBillId,
+            currencyCode,
         };
 
         const jsonString = JSON.stringify(appState);
@@ -193,6 +211,7 @@ export default function MultiBillSplitter() {
             localStorage.removeItem(STORAGE_KEYS.PEOPLE);
             localStorage.removeItem(STORAGE_KEYS.BILLS);
             localStorage.removeItem(STORAGE_KEYS.ACTIVE_BILL_ID);
+            localStorage.removeItem(STORAGE_KEYS.CURRENCY);
             window.history.replaceState(null, "", window.location.pathname);
 
             setPeople([]);
@@ -239,6 +258,7 @@ export default function MultiBillSplitter() {
             items: [],
             totalBill: 0,
             createdAt: new Date(),
+            currency: "",
         };
         // TODO(error-handling): if bill has same name, maybe we should prompt user to rename it?
         setBills([...bills, bill]);
@@ -395,6 +415,10 @@ export default function MultiBillSplitter() {
                                 onClick={generateShareLink}
                                 isCopied={isCopied}
                             />
+                            <CurrencySelector
+                                currencyCode={currencyCode}
+                                onCurrencyChange={setCurrencyCode}
+                            />
                         </div>
                     </div>
                 </div>
@@ -423,6 +447,7 @@ export default function MultiBillSplitter() {
                         <ItemsCard
                             activeBill={activeBill}
                             people={people}
+                            currencyCode={currencyCode}
                             onAddItem={handleAddItem}
                             onRemoveItem={handleRemoveItem}
                             onEditItem={handleEditItem}
@@ -450,6 +475,7 @@ export default function MultiBillSplitter() {
                         people={people}
                         subtotal={subtotal}
                         taxAndFees={taxAndFees}
+                        currencyCode={currencyCode}
                         calculatePersonOwesForBill={calculatePersonOwesForBill}
                     />
                 )}

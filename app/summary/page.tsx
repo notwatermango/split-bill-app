@@ -4,18 +4,16 @@ import { ShareButton } from "@/components/action-buttons";
 import { PersonalBreakdownCard } from "@/components/cards/personal-breakdown-card";
 import SuggestedPaymentsCard from "@/components/cards/suggested-payments-card";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DEFAULT_BILLS, STORAGE_KEYS } from "@/lib/constants";
 import { Bill, Person } from "@/lib/types";
-import { calculateSuggestedPayments, cn, rupiah } from "@/lib/utils";
 import {
-    AlertTriangle,
-    Calculator,
-    CreditCard,
-    Share2,
-    Users2,
-} from "lucide-react";
+    calculateSuggestedPayments,
+    cn,
+    formatCurrency,
+    getCurrency,
+} from "@/lib/utils";
+import { AlertTriangle, Calculator, Users2 } from "lucide-react";
 import LZString from "lz-string";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -28,6 +26,8 @@ export default function MultiBillSplitter() {
     const [visiblePersonBreakdowns, setVisiblePersonBreakdowns] = useState<
         Record<string, boolean>
     >({});
+
+    const [currencyCode, setCurrencyCode] = useState("");
 
     const togglePersonBreakdown = (personId: string) => {
         setVisiblePersonBreakdowns((prev) => ({
@@ -50,6 +50,8 @@ export default function MultiBillSplitter() {
                     const parsedData = JSON.parse(decompressed);
 
                     if (parsedData.people) setPeople(parsedData.people);
+                    if (parsedData.currencyCode)
+                        setCurrencyCode(parsedData.currencyCode);
 
                     if (parsedData.bills) {
                         const parsedBills = parsedData.bills.map(
@@ -85,9 +87,14 @@ export default function MultiBillSplitter() {
             const savedActiveBillId = localStorage.getItem(
                 STORAGE_KEYS.ACTIVE_BILL_ID,
             );
+            const savedCurrency = localStorage.getItem(STORAGE_KEYS.CURRENCY);
 
             if (savedPeople) {
                 setPeople(JSON.parse(savedPeople));
+            }
+
+            if (savedCurrency) {
+                setCurrencyCode(savedCurrency);
             }
 
             if (savedBills) {
@@ -133,12 +140,19 @@ export default function MultiBillSplitter() {
         }
     }, [activeBillId]);
 
+    useEffect(() => {
+        if (currencyCode) {
+            localStorage.setItem(STORAGE_KEYS.CURRENCY, currencyCode);
+        }
+    }, [currencyCode]);
+
     // Generate Share Link Feature
     const generateShareLink = () => {
         const appState = {
             people,
             bills,
             activeBillId,
+            currencyCode,
         };
 
         const jsonString = JSON.stringify(appState);
@@ -223,7 +237,13 @@ export default function MultiBillSplitter() {
         bill.items.some((item) => item.assignedTo.length === 0),
     );
     const isAnyBillUnpaid = bills.some((bill) => !bill.paidBy);
-    const suggestedPayments = calculateSuggestedPayments(people, personTotals);
+
+    const currentCurrency = getCurrency(currencyCode);
+    const suggestedPayments = calculateSuggestedPayments(
+        people,
+        personTotals,
+        currentCurrency.balanceTolerance,
+    );
 
     return (
         <div className="min-h-screen bg-background p-4">
@@ -290,6 +310,7 @@ export default function MultiBillSplitter() {
                 <SuggestedPaymentsCard
                     suggestedPayments={suggestedPayments}
                     people={people}
+                    currencyCode={currencyCode}
                 />
 
                 <Card>
@@ -319,6 +340,7 @@ export default function MultiBillSplitter() {
                                                 visiblePersonBreakdowns
                                             }
                                             personTotals={personTotals}
+                                            currencyCode={currencyCode}
                                         />
                                     );
                                 })}
@@ -364,10 +386,11 @@ export default function MultiBillSplitter() {
                                                         {bill.name}
                                                     </h5>
                                                     <span className="font-semibold text-details">
-                                                        {rupiah(
+                                                        {formatCurrency(
                                                             billEffectiveTotal.toFixed(
                                                                 2,
                                                             ),
+                                                            currencyCode,
                                                         )}
                                                     </span>
                                                 </div>
@@ -457,13 +480,14 @@ export default function MultiBillSplitter() {
                                                                             </div>
                                                                         </div>
                                                                         <span className="shrink-0 ml-4 font-mono text-xs">
-                                                                            {rupiah(
+                                                                            {formatCurrency(
                                                                                 (
                                                                                     item.price *
                                                                                     item.quantity
                                                                                 ).toFixed(
                                                                                     2,
                                                                                 ),
+                                                                                currencyCode,
                                                                             )}
                                                                         </span>
                                                                     </div>
@@ -474,10 +498,11 @@ export default function MultiBillSplitter() {
                                                                     Subtotal
                                                                 </span>
                                                                 <span>
-                                                                    {rupiah(
+                                                                    {formatCurrency(
                                                                         billSubtotal.toFixed(
                                                                             2,
                                                                         ),
+                                                                        currencyCode,
                                                                     )}
                                                                 </span>
                                                             </div>
@@ -489,10 +514,11 @@ export default function MultiBillSplitter() {
                                                                         Fees
                                                                     </span>
                                                                     <span>
-                                                                        {rupiah(
+                                                                        {formatCurrency(
                                                                             billTaxAndFees.toFixed(
                                                                                 2,
                                                                             ),
+                                                                            currencyCode,
                                                                         )}
                                                                     </span>
                                                                 </div>
@@ -508,7 +534,10 @@ export default function MultiBillSplitter() {
                             <div className="flex justify-between items-center mt-6 pt-6 border-t font-semibold text-lg">
                                 <h4>Grand Total - All Bills:</h4>
                                 <span className="font-bold">
-                                    {rupiah(grandTotal.toFixed(2))}
+                                    {formatCurrency(
+                                        grandTotal.toFixed(2),
+                                        currencyCode,
+                                    )}
                                 </span>
                             </div>
                         </div>

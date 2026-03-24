@@ -1,20 +1,33 @@
+import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from "@/lib/constants";
+import { Currency, Payment, Person } from "@/lib/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Person, Payment } from "@/lib/types";
-import { BALANCE_TOLERANCE } from "@/lib/constants";
+
+import { getTimezone } from "countries-and-timezones";
+import countryToCurrency from "country-to-currency";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-const rupiah = (number: any) => {
-    return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-    }).format(number);
-};
+export function getCurrency(code?: string): Currency {
+    if (!code) return getCurrency(detectTimezoneCurrencyCode());
+    return (
+        SUPPORTED_CURRENCIES.find((c) => c.code === code) ?? DEFAULT_CURRENCY
+    );
+}
 
-export { rupiah };
+export function formatCurrency(amount: number | string, currencyCode: string) {
+    const currency = getCurrency(currencyCode);
+    const numValue = typeof amount === "string" ? parseFloat(amount) : amount;
+
+    return new Intl.NumberFormat(currency.locale, {
+        style: "currency",
+        currency: currency.code,
+        minimumFractionDigits: currency.precision,
+        maximumFractionDigits: currency.precision,
+    }).format(numValue);
+}
 
 export function calculateSuggestedPayments(
     people: Person[],
@@ -22,10 +35,11 @@ export function calculateSuggestedPayments(
         string,
         { owes: number; paid: number; balance: number }
     >,
+    balanceTolerance: number = DEFAULT_CURRENCY.balanceTolerance,
 ): Payment[] {
     const balances = people
         .map((p) => ({ id: p.id, balance: personTotals[p.id]?.balance ?? 0 }))
-        .filter((p) => Math.abs(p.balance) > BALANCE_TOLERANCE);
+        .filter((p) => Math.abs(p.balance) > balanceTolerance);
 
     const debtors = balances
         .filter((p) => p.balance < 0)
@@ -59,4 +73,33 @@ export function calculateSuggestedPayments(
     }
 
     return payments;
+}
+
+export function detectTimezoneCurrencyCode(): string {
+    if (typeof window === "undefined" || !Intl) {
+        return DEFAULT_CURRENCY.code;
+    }
+
+    try {
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        const tzInfo = getTimezone(timeZone);
+
+        if (!tzInfo || tzInfo.countries.length === 0) {
+            return DEFAULT_CURRENCY.code;
+        }
+
+        const countryCode = tzInfo.countries[0];
+
+        const currencyCode = countryToCurrency[countryCode];
+
+        return currencyCode;
+    } catch (error) {
+        console.warn(
+            "Failed to detect currency from timezone, using default.",
+            error,
+        );
+    }
+
+    return DEFAULT_CURRENCY.code;
 }

@@ -14,13 +14,13 @@ This project costs me nothing to build and host in [split.notwatermango.cc](http
 ## Features
 
 - **Split multiple bills** – Manage several receipts and expenses in one single session.
-- **Calculate payment** – Automatically figures out the grand totals and suggest least transfer combination.
-- **Share via link** – Generates a URL containing all your bill data to easily share with friends.
-- **Local storage** – Automatically saves your session data to your browser so you never lose it on refresh.
-- **Responsive design** - Mobile friendly
-- **Dark mode**
-- ⏳ **(TBA) Shorter share link URL**
-- ⏳ **(TBA) Currencies** - Now only IDR 🇮🇩
+- **Calculate payment** – Automatically figures out the balances and suggests the least transfer settlement solution.
+- **Share via link** – The shareable URL contains all the data.
+- **Local storage** – Saves data to browser.
+- **Responsive design** - Mobile friendly.
+- **Multi Currencies** - Supports 💸 from 🇺🇸, 🇮🇩, 🇪🇺, 🇬🇧, 🇷🇺, 🇨🇳, and more with timezone detection.
+- **Dark mode (BETA)**
+- ⏳ **(TBA) Shorter share link URL** - I might create a dedicated worker later, for now please use tinyurl.
 
 ## Tech Stack
 

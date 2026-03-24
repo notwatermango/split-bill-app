@@ -2,15 +2,16 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Bill, Person } from "@/lib/types";
+import { formatCurrency } from "@/lib/utils";
 import { Calculator } from "lucide-react";
-import { Person, Bill } from "@/lib/types";
-import { rupiah } from "@/lib/utils";
 
 interface BillSummaryCardProps {
     activeBill: Bill;
     people: Person[];
     subtotal: number;
     taxAndFees: number;
+    currencyCode: string;
     calculatePersonOwesForBill: (personId: string, bill: Bill) => number;
 }
 
@@ -19,6 +20,7 @@ function BillSummaryCard({
     people,
     subtotal,
     taxAndFees,
+    currencyCode,
     calculatePersonOwesForBill,
 }: BillSummaryCardProps) {
     return (
@@ -32,11 +34,9 @@ function BillSummaryCard({
             <CardContent className="space-y-4">
                 <div className="flex flex-col sm:grid grid-cols-2 gap-4 text-sm">
                     <div>
-                        <span className="text-muted-foreground">
-                            Subtotal:
-                        </span>
+                        <span className="text-muted-foreground">Subtotal:</span>
                         <span className="float-right font-medium">
-                            {rupiah(subtotal?.toFixed(2))}
+                            {formatCurrency(subtotal?.toFixed(2), currencyCode)}
                         </span>
                     </div>
                     <div>
@@ -44,7 +44,10 @@ function BillSummaryCard({
                             Tax & Fees:
                         </span>
                         <span className="float-right font-medium">
-                            {rupiah(taxAndFees.toFixed(2))}
+                            {formatCurrency(
+                                taxAndFees.toFixed(2),
+                                currencyCode,
+                            )}
                         </span>
                     </div>
                     <div className="col-span-2">
@@ -53,23 +56,21 @@ function BillSummaryCard({
                     <div className="col-span-2 flex items-center justify-between">
                         <span className="font-semibold">Total:</span>
                         <span className="float-right font-semibold text-lg">
-                            {rupiah(
+                            {formatCurrency(
                                 Math.max(
                                     activeBill?.totalBill || 0,
                                     subtotal,
                                 ).toFixed(2),
+                                currencyCode,
                             )}
                         </span>
                     </div>
                     <div className="col-span-2">
-                        <span className="text-muted-foreground">
-                            Paid By:
-                        </span>
+                        <span className="text-muted-foreground">Paid By:</span>
                         <span className="float-right font-medium text-details">
                             {activeBill?.paidBy
-                                ? people.find(
-                                      (p) => p.id === activeBill.paidBy,
-                                  )?.name || "Unknown"
+                                ? people.find((p) => p.id === activeBill.paidBy)
+                                      ?.name || "Unknown"
                                 : "Not specified"}
                         </span>
                     </div>
@@ -78,9 +79,7 @@ function BillSummaryCard({
                 <Separator />
 
                 <div>
-                    <h4 className="font-semibold mb-3">
-                        Expense per person:
-                    </h4>
+                    <h4 className="font-semibold mb-3">Expense per person:</h4>
                     <div className="space-y-2">
                         {people.map((person) => {
                             const owesForBill = calculatePersonOwesForBill(
@@ -96,7 +95,10 @@ function BillSummaryCard({
                                         {person.name}
                                     </span>
                                     <span className="text-lg font-semibold">
-                                        {rupiah(owesForBill.toFixed(2))}
+                                        {formatCurrency(
+                                            owesForBill.toFixed(2),
+                                            currencyCode,
+                                        )}
                                     </span>
                                 </div>
                             );

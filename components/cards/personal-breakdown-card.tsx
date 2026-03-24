@@ -1,18 +1,11 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { Bill, Item, Person } from "@/lib/types";
+import { formatCurrency } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
-import { Person, Item, Bill } from "@/lib/types";
-import { rupiah } from "@/lib/utils";
 
-function PersonalBreakdownCard({
-    person,
-    bills,
-    calculateBillTotals,
-    togglePersonBreakdown,
-    visiblePersonBreakdowns,
-    personTotals,
-}: {
+interface PersonalBreakdownCardInterface {
     person: Person;
     bills: Bill[];
     calculateBillTotals: (bill: Bill) => {
@@ -26,7 +19,18 @@ function PersonalBreakdownCard({
         string,
         { paid: number; owes: number; balance: number }
     >;
-}) {
+    currencyCode: string;
+}
+
+function PersonalBreakdownCard({
+    person,
+    bills,
+    calculateBillTotals,
+    togglePersonBreakdown,
+    visiblePersonBreakdowns,
+    personTotals,
+    currencyCode,
+}: PersonalBreakdownCardInterface) {
     let personGrandTotal = 0;
     const personBillBreakdown = bills
         .map((bill) => {
@@ -71,14 +75,7 @@ function PersonalBreakdownCard({
             const billTotal = billItemsTotal + taxShare;
             const amountPaid =
                 bill.paidBy === person.id ? billEffectiveTotal : 0;
-            if (bill.name == "Defisit Kezia") {
-                console.log(bill);
-            }
-            if (person.name === "kez") {
-                console.log(bill.paidBy);
-                console.log(bill.paidBy == person.id);
-                console.log(amountPaid);
-            }
+
             const netOwesForBill = billTotal - amountPaid;
 
             personGrandTotal += netOwesForBill;
@@ -94,7 +91,7 @@ function PersonalBreakdownCard({
         })
         .filter(
             (breakdown) =>
-                breakdown.items.length > 0 || breakdown.amountPaid > 0
+                breakdown.items.length > 0 || breakdown.amountPaid > 0,
         );
 
     return (
@@ -130,7 +127,10 @@ function PersonalBreakdownCard({
                         }`}
                     >
                         {personGrandTotal < 0 ? "" : "("}
-                        {rupiah(Math.abs(personGrandTotal).toFixed(2))}
+                        {formatCurrency(
+                            Math.abs(personGrandTotal).toFixed(2),
+                            currencyCode,
+                        )}
                         {personGrandTotal < 0 ? "" : ")"}
                     </span>
                 </div>
@@ -142,20 +142,22 @@ function PersonalBreakdownCard({
                                 <span>
                                     Total Paid{" "}
                                     <span className="text-income">
-                                        {rupiah(
+                                        {formatCurrency(
                                             personTotals[
                                                 person.id
-                                            ].paid.toFixed(2)
+                                            ].paid.toFixed(2),
+                                            currencyCode,
                                         )}
                                     </span>{" "}
                                 </span>
                                 <span>
                                     Total Spent{" "}
                                     <span className="text-deficit">
-                                        {rupiah(
+                                        {formatCurrency(
                                             personTotals[
                                                 person.id
-                                            ].owes.toFixed(2)
+                                            ].owes.toFixed(2),
+                                            currencyCode,
                                         )}
                                     </span>
                                 </span>
@@ -187,10 +189,11 @@ function PersonalBreakdownCard({
                                                             : "text-deficit"
                                                     }`}
                                                 >
-                                                    {rupiah(
+                                                    {formatCurrency(
                                                         Math.abs(
-                                                            netOwesForBill
-                                                        ).toFixed(2)
+                                                            netOwesForBill,
+                                                        ).toFixed(2),
+                                                        currencyCode,
                                                     )}
                                                 </span>
                                             </div>
@@ -219,14 +222,15 @@ function PersonalBreakdownCard({
                                                                 )}
                                                             </span>
                                                             <span>
-                                                                {rupiah(
+                                                                {formatCurrency(
                                                                     share.toFixed(
-                                                                        2
-                                                                    )
+                                                                        2,
+                                                                    ),
+                                                                    currencyCode,
                                                                 )}
                                                             </span>
                                                         </div>
-                                                    )
+                                                    ),
                                                 )}
                                                 {taxShare > 0 && (
                                                     <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
@@ -234,10 +238,11 @@ function PersonalBreakdownCard({
                                                             Tax & Fees Share
                                                         </span>
                                                         <span>
-                                                            {rupiah(
+                                                            {formatCurrency(
                                                                 taxShare.toFixed(
-                                                                    2
-                                                                )
+                                                                    2,
+                                                                ),
+                                                                currencyCode,
                                                             )}
                                                         </span>
                                                     </div>
@@ -248,17 +253,18 @@ function PersonalBreakdownCard({
                                                             Paid for bill
                                                         </span>
                                                         <span>
-                                                            {rupiah(
+                                                            {formatCurrency(
                                                                 amountPaid.toFixed(
-                                                                    2
-                                                                )
+                                                                    2,
+                                                                ),
+                                                                currencyCode,
                                                             )}
                                                         </span>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
-                                    )
+                                    ),
                                 )}
                             </div>
                         ) : (

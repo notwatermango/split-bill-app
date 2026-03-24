@@ -1,35 +1,47 @@
-import {
-    CreditCard,
-    ArrowRight,
-    CheckCircle2,
-    Users,
-    Copy,
-    Check,
-    EyeOff,
-    Eye,
-} from "lucide-react";
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Person, Payment } from "@/lib/types";
-import { cn, rupiah } from "@/lib/utils";
-import { useState, useCallback } from "react";
+import { Payment, Person } from "@/lib/types";
+import { cn, formatCurrency, getCurrency } from "@/lib/utils";
+import {
+    ArrowRight,
+    Check,
+    CheckCircle2,
+    Copy,
+    CreditCard,
+    Eye,
+    EyeOff,
+    Users,
+} from "lucide-react";
+import { useCallback, useState } from "react";
 
 interface SuggestedPaymentsCardProps {
     suggestedPayments: Payment[];
     people: Person[];
+    currencyCode: string;
 }
 
-function CopyAmountButton({ amount }: { amount: number }) {
+function CopyAmountButton({
+    amount,
+    precision,
+}: {
+    amount: number;
+    precision: number;
+}) {
+    // Here we need currency precision, to avoid decimal transfers in IDR
     const [copied, setCopied] = useState(false);
 
     const handleCopy = useCallback(async () => {
         try {
-            await navigator.clipboard.writeText(String(amount.toFixed(0)));
+            await navigator.clipboard.writeText(
+                String(amount.toFixed(precision)),
+            );
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         } catch {
             // fallback for older browsers
             const el = document.createElement("textarea");
-            el.value = String(amount.toFixed(0));
+            el.value = String(amount.toFixed(precision));
             document.body.appendChild(el);
             el.select();
             document.execCommand("copy");
@@ -65,8 +77,10 @@ function CopyAmountButton({ amount }: { amount: number }) {
 export default function SuggestedPaymentsCard({
     suggestedPayments,
     people,
+    currencyCode,
 }: SuggestedPaymentsCardProps) {
     const [showSuggestedPayments, setShowSuggestedPayments] = useState(false);
+    const currency = getCurrency(currencyCode);
 
     return (
         <Card>
@@ -173,10 +187,16 @@ export default function SuggestedPaymentsCard({
                                     {/* Amount + Copy */}
                                     <div className="flex items-center justify-end gap-1 pl-8 sm:pl-0">
                                         <span className="font-bold text-lg tracking-tight text-details">
-                                            {rupiah(payment.amount.toFixed(0))}
+                                            {formatCurrency(
+                                                payment.amount.toFixed(
+                                                    currency.precision,
+                                                ),
+                                                currencyCode,
+                                            )}
                                         </span>
                                         <CopyAmountButton
                                             amount={payment.amount}
+                                            precision={currency.precision}
                                         />
                                     </div>
                                 </div>

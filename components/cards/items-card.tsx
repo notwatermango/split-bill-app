@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SelectableBadge } from "@/components/ui/selectable-badge";
 import { Bill, Item, Person } from "@/lib/types";
-import { cn, rupiah } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import {
     Check,
     ClipboardList,
@@ -22,6 +22,7 @@ import { useRef, useState } from "react";
 interface ItemsCardProps {
     activeBill: Bill;
     people: Person[];
+    currencyCode: string;
     onAddItem: (item: {
         name: string;
         price: string;
@@ -40,6 +41,7 @@ interface ItemsCardProps {
 function ItemsCard({
     activeBill,
     people,
+    currencyCode,
     onAddItem,
     onRemoveItem,
     onEditItem,
@@ -371,10 +373,14 @@ function ItemsCard({
                                                 {item.name}
                                             </h4>
                                             <p className="text-sm text-muted-foreground">
-                                                {rupiah(item.price.toFixed(2))}{" "}
+                                                {formatCurrency(
+                                                    item.price.toFixed(2),
+                                                    currencyCode,
+                                                )}{" "}
                                                 × {item.quantity} ={" "}
-                                                {rupiah(
+                                                {formatCurrency(
                                                     item.finalPrice.toFixed(2),
+                                                    currencyCode,
                                                 )}
                                             </p>
                                         </div>
@@ -422,11 +428,12 @@ function ItemsCard({
                                         </div>
                                         {item.assignedTo.length > 0 && (
                                             <p className="text-xs text-muted-foreground mt-1">
-                                                {rupiah(
+                                                {formatCurrency(
                                                     (
                                                         item.finalPrice /
                                                         item.assignedTo.length
                                                     ).toFixed(2),
+                                                    currencyCode,
                                                 )}{" "}
                                                 per person
                                             </p>

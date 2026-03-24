@@ -12,6 +12,14 @@ export interface Item {
     assignedTo: string[];
 }
 
+export interface Currency {
+    code: string;
+    symbol: string;
+    locale: string;
+    precision: number;
+    balanceTolerance: number;
+}
+
 export interface Bill {
     id: string;
     name: string;
@@ -19,6 +27,7 @@ export interface Bill {
     totalBill: number;
     createdAt: Date;
     paidBy?: string;
+    currency: string;
 }
 
 export type Payment = {
