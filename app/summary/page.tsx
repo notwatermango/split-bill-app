@@ -147,7 +147,7 @@ export default function MultiBillSplitter() {
     }, [currencyCode]);
 
     // Generate Share Link Feature
-    const generateShareLink = () => {
+    const generateShareLink = async () => {
         const appState = {
             people,
             bills,
@@ -160,16 +160,46 @@ export default function MultiBillSplitter() {
 
         const shareableUrl = `${window.location.origin}${window.location.pathname}#${compressed}`;
 
-        navigator.clipboard
-            .writeText(shareableUrl)
-            .then(() => {
-                setIsCopied(true);
-                setTimeout(() => setIsCopied(false), 2000);
-            })
-            .catch((err) => {
-                console.error("Failed to copy text: ", err);
-                alert("Failed to copy to clipboard.");
-            });
+        try {
+            let finalUrl = shareableUrl;
+
+            try {
+                const response = await fetch(
+                    process.env.NEXT_PUBLIC_SHORTENER_API_URL ||
+                        "https://link.notwatermango.cc/api/shorten",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ url: shareableUrl }),
+                    },
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.short_url) {
+                        finalUrl = data.short_url;
+                    }
+                } else {
+                    console.warn(
+                        "Failed to shorten URL, falling back to original",
+                    );
+                }
+            } catch (shortenErr) {
+                console.warn(
+                    "Error shortening URL, falling back to original",
+                    shortenErr,
+                );
+            }
+
+            await navigator.clipboard.writeText(finalUrl);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch (err) {
+            console.error("Failed to copy text: ", err);
+            alert("Failed to copy to clipboard.");
+        }
     };
 
     const calculateBillTotals = (bill: Bill) => {
