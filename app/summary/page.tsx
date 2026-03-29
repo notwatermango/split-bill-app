@@ -23,6 +23,7 @@ export default function MultiBillSplitter() {
     const [bills, setBills] = useState<Bill[]>([]);
     const [activeBillId, setActiveBillId] = useState("");
     const [isCopied, setIsCopied] = useState(false);
+    const [isGeneratingLink, setIsGeneratingLink] = useState(false);
     const [visiblePersonBreakdowns, setVisiblePersonBreakdowns] = useState<
         Record<string, boolean>
     >({});
@@ -148,6 +149,7 @@ export default function MultiBillSplitter() {
 
     // Generate Share Link Feature
     const generateShareLink = async () => {
+        setIsGeneratingLink(true);
         const appState = {
             people,
             bills,
@@ -158,7 +160,8 @@ export default function MultiBillSplitter() {
         const jsonString = JSON.stringify(appState);
         const compressed = LZString.compressToEncodedURIComponent(jsonString);
 
-        const shareableUrl = `${window.location.origin}${window.location.pathname}#${compressed}`;
+        const cleanPathname = window.location.pathname.replace(/\/+/g, "/");
+        const shareableUrl = `${window.location.origin}${cleanPathname}#${compressed}`;
 
         try {
             let finalUrl = shareableUrl;
@@ -199,6 +202,8 @@ export default function MultiBillSplitter() {
         } catch (err) {
             console.error("Failed to copy text: ", err);
             alert("Failed to copy to clipboard.");
+        } finally {
+            setIsGeneratingLink(false);
         }
     };
 
@@ -290,6 +295,7 @@ export default function MultiBillSplitter() {
                             <ShareButton
                                 onClick={generateShareLink}
                                 isCopied={isCopied}
+                                isLoading={isGeneratingLink}
                             />
                         </div>
                     </div>

@@ -26,6 +26,7 @@ export default function MultiBillSplitter() {
     const [activeBillId, setActiveBillId] = useState("");
     const [currencyCode, setCurrencyCode] = useState("");
     const [isCopied, setIsCopied] = useState(false);
+    const [isGeneratingLink, setIsGeneratingLink] = useState(false);
 
     // Initial Load: Check URL Hash first, then fallback to LocalStorage
     useEffect(() => {
@@ -178,6 +179,7 @@ export default function MultiBillSplitter() {
     // --- Action handlers (callbacks for child components) ---
 
     const generateShareLink = async () => {
+        setIsGeneratingLink(true);
         const appState = {
             people,
             bills,
@@ -188,7 +190,9 @@ export default function MultiBillSplitter() {
         const jsonString = JSON.stringify(appState);
         const compressed = LZString.compressToEncodedURIComponent(jsonString);
 
-        const shareableUrl = `${window.location.origin}${window.location.pathname}/summary#${compressed}`;
+        const cleanPathname = window.location.pathname.replace(/\/+/g, "/");
+        const basePath = cleanPathname === "/" ? "" : cleanPathname;
+        const shareableUrl = `${window.location.origin}${basePath}/summary#${compressed}`;
 
         try {
             let finalUrl = shareableUrl;
@@ -229,6 +233,8 @@ export default function MultiBillSplitter() {
         } catch (err) {
             console.error("Failed to copy text: ", err);
             alert("Failed to copy to clipboard.");
+        } finally {
+            setIsGeneratingLink(false);
         }
     };
 
@@ -444,6 +450,7 @@ export default function MultiBillSplitter() {
                             <ShareButton
                                 onClick={generateShareLink}
                                 isCopied={isCopied}
+                                isLoading={isGeneratingLink}
                             />
                             <CurrencySelector
                                 currencyCode={currencyCode}
@@ -515,6 +522,7 @@ export default function MultiBillSplitter() {
                     generateShareLink={generateShareLink}
                     resetAllData={resetAllData}
                     isCopied={isCopied}
+                    isGeneratingLink={isGeneratingLink}
                 />
             </div>
         </div>

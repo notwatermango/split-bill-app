@@ -11,12 +11,14 @@ interface HowToUseCardProps {
     generateShareLink: () => void;
     resetAllData: () => void;
     isCopied: boolean;
+    isGeneratingLink?: boolean;
 }
 
 function HowToUseCard({
     generateShareLink,
     resetAllData,
     isCopied,
+    isGeneratingLink,
 }: HowToUseCardProps) {
     return (
         <Card>
@@ -38,6 +40,7 @@ function HowToUseCard({
                         <ShareButton
                             onClick={generateShareLink}
                             isCopied={isCopied}
+                            isLoading={isGeneratingLink}
                         />{" "}
                         to copy shareable link url.
                     </li>

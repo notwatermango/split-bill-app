@@ -37,19 +37,26 @@ export function BillSummaryButton() {
 export function ShareButton({
     onClick,
     isCopied,
+    isLoading,
 }: {
     onClick: () => void;
     isCopied: boolean;
+    isLoading?: boolean;
 }) {
     return (
         <Button
             variant="outline"
             size="sm"
             onClick={onClick}
-            className="cursor-pointer border-primary/30 hover:text-primary-foreground hover:border-primary bg-primary/5 hover:bg-primary text-primary transition-all"
+            disabled={isLoading}
+            className="cursor-pointer border-primary/30 hover:text-primary-foreground hover:border-primary bg-primary/5 hover:bg-primary text-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-            <Share2 className="h-4 w-4" />
-            {isCopied ? "Copied!" : "Share Bills"}
+            {isLoading ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            ) : (
+                <Share2 className="h-4 w-4" />
+            )}
+            {isLoading ? "Generating..." : isCopied ? "Copied!" : "Share Bills"}
         </Button>
     );
 }
