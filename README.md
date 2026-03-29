@@ -19,8 +19,8 @@ This project costs me nothing to build and host in [split.notwatermango.cc](http
 - **Local storage** – Saves data to browser.
 - **Responsive design** - Mobile friendly.
 - **Multi Currencies** - Supports 💸 from 🇺🇸, 🇮🇩, 🇪🇺, 🇬🇧, 🇷🇺, 🇨🇳, and more with timezone detection.
+- **Shortened share link URL** - With custom dedicated worker [link.notwatermango.cc](https://link.notwatermango.cc).
 - **Dark mode (BETA)**
-- ⏳ **(TBA) Shorter share link URL** - I might create a dedicated worker later, for now please use tinyurl.
 
 ## Tech Stack
 
